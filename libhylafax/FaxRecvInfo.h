@@ -50,7 +50,7 @@ public:
     FaxRecvInfo(const FaxRecvInfo& other);
     ~FaxRecvInfo();
 
-    fxStr encode();
+    fxStr encode() const;
     bool decode(const char*);
 };
 #endif /* _FaxRecvInfo_ */

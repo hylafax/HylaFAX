@@ -47,12 +47,12 @@ FaxRecvInfo::FaxRecvInfo(const FaxRecvInfo& other)
 FaxRecvInfo::~FaxRecvInfo() {}
 
 fxStr
-FaxRecvInfo::encode()
+FaxRecvInfo::encode() const
 {
     fxStr callid_formatted;
     for (u_int i = 0; i < callid.size(); i++) {
 	if (i) callid_formatted.append("\",\"");
-        callid_formatted.append(callid[i]);
+        callid_formatted.append(callid.id(i));
     }
     return fxStr::format("%x,%x,%x,%s,%s,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\""
 	, time
