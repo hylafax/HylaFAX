@@ -101,6 +101,7 @@ public:
 	DATACONN   = 8,		// data carrier established
 	RING	   = 9		// glare - ring detected after dial
     };
+    static Status callStatus[10];	 // printable call status
 
     enum {			// ClassModem::CallType
 	CALLTYPE_UNKNOWN = 0,	// unknown variety
@@ -183,6 +184,10 @@ public:
 	AT_VCON		= 17,	// voice connection
 	AT_OTHER	= 18	// unknown response (not one of above)
     };
+    static const char* ATresponses[19];
+
+    static const char* serviceNames[9];	 // class 2 services
+
 private:
     ModemServer& server;	// server for getting to device
     long	dataTimeout;	// baud rate-dependent data timeout
@@ -203,10 +208,6 @@ protected:
     fxStr	mfrQueryCmd;	// manufacturer identification command
     fxStr	modelQueryCmd;	// model identification command
     fxStr	revQueryCmd;	// product revision identification command
-
-    static const char* serviceNames[9];	 // class 2 services
-    static Status callStatus[10];	 // printable call status
-    static const char* ATresponses[19];
 
     ClassModem(ModemServer&, const ModemConfig&);
 
