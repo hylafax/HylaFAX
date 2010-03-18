@@ -3776,6 +3776,12 @@ faxQueueApp::jobError(const Job& job, const char* fmt ...)
 void
 faxQueueApp::showDebugState(void)
 {
+    traceServer("DEBUG: Listing modemes");
+    for (ModemIter iter(Modem::list); iter.notDone(); iter++) {
+	Modem& modem = iter;
+	traceModem(modem, "STATE: %X", modem.getState());
+    }
+
     traceServer("DEBUG: Listing destJobs with %d items", destJobs.size());
     for (DestInfoDictIter iter(destJobs); iter.notDone(); iter++)
     {
