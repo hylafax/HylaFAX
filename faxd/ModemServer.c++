@@ -168,6 +168,7 @@ void
 ModemServer::close()
 {
     if (lockModem()) {
+	setServerStatus("Freeing device");
 	if (modem)
 	    modem->hangup();
 	discardModem(true);
