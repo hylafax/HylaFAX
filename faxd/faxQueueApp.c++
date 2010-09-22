@@ -213,7 +213,10 @@ faxQueueApp::scanQueueDirectory()
     }
     for (dirent* dp = readdir(dir); dp; dp = readdir(dir)) {
 	if (dp->d_name[0] == 'q')
+	{
 	    submitJob(&dp->d_name[1], true);
+	    Dispatcher::instance().dispatch();
+	}
     }
     closedir(dir);
 }
