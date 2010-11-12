@@ -215,7 +215,9 @@ faxQueueApp::scanQueueDirectory()
 	if (dp->d_name[0] == 'q')
 	{
 	    submitJob(&dp->d_name[1], true);
-	    Dispatcher::instance().dispatch();
+	    long s, us;
+	    s = 0; us = 10;
+	    Dispatcher::instance().dispatch(s, us);
 	}
     }
     closedir(dir);
