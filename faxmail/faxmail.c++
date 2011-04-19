@@ -45,21 +45,18 @@ public:
     MySendFaxClient();
     ~MySendFaxClient();
 
-    void setup(bool);
+    friend class faxMailApp;
+
+    void setVerbose(bool);
     bool setConfigItem(const char* tag, const char* value);
     void fatal(const char* fmt ...);
 };
 MySendFaxClient::MySendFaxClient() {}
 MySendFaxClient::~MySendFaxClient() {}
 void
-MySendFaxClient::setup(bool b)
+MySendFaxClient::setVerbose(bool b)
 {
-    resetConfig();
-    readConfig(FAX_SYSCONF);
-    readConfig(FAX_LIBDATA "/sendfax.conf");
-    readConfig(FAX_LIBDATA "/faxmail.conf");
-    readConfig(FAX_USERCONF);
-    setVerbose(b);
+    SendFaxClient::setVerbose(b);
     FaxClient::setVerbose(b);
 }
 bool MySendFaxClient::setConfigItem(const char* tag, const char* value)
@@ -153,8 +150,15 @@ faxMailApp::run(int argc, char** argv)
     extern char* optarg;
     int c;
 
+    /*
+     * Setup to submit the formatted facsimile directly
+     * to a server.
+     */
+    client = new MySendFaxClient;
+
     resetConfig();
     readConfig(FAX_SYSCONF);
+    client->readConfig(FAX_LIBDATA "/sendfax.conf");
     readConfig(FAX_LIBDATA "/faxmail.conf");
     readConfig(FAX_USERCONF);
 
@@ -220,6 +224,7 @@ faxMailApp::run(int argc, char** argv)
 	    break;
 	case 'v':			// trace work
 	    setVerbose(true);
+	    client->setVerbose(true);
 	    break;
 	case 'W':			// page width
 	    setPageWidth(atof(optarg));
@@ -237,13 +242,6 @@ faxMailApp::run(int argc, char** argv)
     else
 	setPageMargins("t=0.6in,b=0.25in");
 
-
-    /*
-     * Setup to submit the formatted facsimile directly
-     * to a server.
-     */
-    client = new MySendFaxClient;
-    client->setup(verbose);
 
     /*
      * Setup the destination (dialstring and
@@ -868,6 +866,7 @@ void
 faxMailApp::resetConfig()
 {
     TextFormat::resetConfig();
+    client->resetConfig();
     setupConfig();
 }
 
@@ -898,6 +897,8 @@ faxMailApp::setConfigItem(const char* tag, const char* value)
     else if (MsgFmt::setConfigItem(tag, value))
 	;
     else if (TextFormat::setConfigItem(tag, value))
+	;
+    else if (client->setConfigItem(tag, value))
 	;
     else
 	return (false);
