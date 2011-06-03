@@ -647,9 +647,9 @@ void
 InetFaxServer::portCmd(Token t)
 {
     if (t == T_EPRT)
-	logcmd(T_EPRT, "|%d|%s|%u|", 1, inet_ntoa(data_dest.in.sin_addr), data_dest.in.sin_port);
+	logcmd(T_EPRT, "|%d|%s|%u|", 1, inet_ntoa(data_dest.in.sin_addr), ntohs(data_dest.in.sin_port));
     else
-	logcmd(T_PORT, "%s;%u", inet_ntoa(data_dest.in.sin_addr), data_dest.in.sin_port);
+	logcmd(T_PORT, "%s;%u", inet_ntoa(data_dest.in.sin_addr), ntohs(data_dest.in.sin_port));
     usedefault = false;
     if (pdata >= 0)
        (void) Sys::close(pdata), pdata = -1;
