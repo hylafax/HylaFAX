@@ -163,12 +163,26 @@ faxApp::FIFOInput(int fd)
 	char* bp = &buf[0];
 	do {
 	    char* cp = strchr(bp, '\0');
-	    if (cp > bp) {
+	    if (cp == &buf[n]) {
+		/*
+		 * We reached the end of the read buffer, but the last message
+		 * is missing it's NUL terminator. The message must be
+		 * incomplete, move that part of the message at the begining
+		 * of the buffer and read more from the FIFO.
+		 */
+		u_int left = cp-bp;
+		memmove(buf, bp, left);
+		n = Sys::read(fd, &buf[left], sizeof (buf)-1-left);
+		n += left;
+		buf[n] = '\0';
+		bp = &buf[0];
+	    } else if (cp > bp) {
 		if (cp[-1] == '\n')
 		    cp[-1] = '\0';
 		FIFOMessage(bp);
-	    }
-	    bp = cp+1;
+		bp = cp+1;
+	    } else
+		bp = cp+1;
 	} while (bp < &buf[n]);
     }
 #ifdef FIFOSELECTBUG
