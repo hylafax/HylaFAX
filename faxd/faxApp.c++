@@ -163,7 +163,7 @@ faxApp::FIFOInput(int fd)
 	char* bp = &buf[0];
 	do {
 	    char* cp = strchr(bp, '\0');
-	    if (cp == &buf[n]) {
+	    if (bp != &buf[0] && cp == &buf[n]) {
 		/*
 		 * We reached the end of the read buffer, but the last message
 		 * is missing it's NUL terminator. The message must be
@@ -173,7 +173,13 @@ faxApp::FIFOInput(int fd)
 		u_int left = cp-bp;
 		memmove(buf, bp, left);
 		n = Sys::read(fd, &buf[left], sizeof (buf)-1-left);
-		n += left;
+		if (n == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+		    /* There is nothing left to read. The message must not be
+                       NUL terminated. (maybe sent with "echo") */
+		    n = left + 1;
+		    buf[n-1] = '\0';
+		} else
+		    n += left;
 		buf[n] = '\0';
 		bp = &buf[0];
 	    } else if (cp > bp) {
