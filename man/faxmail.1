@@ -450,6 +450,7 @@ TabStop	integer	\s-18\s+1	inter-stop setting in characters
 TextFont	string	\s-1Courier\s+1	name of font for setting text
 TextLineHeight	inches	\-	text formatting line height control
 TextPointSize	inches	\s-1\fIsee below\fP\s+1	size to use in setting text
+TrimText	boolean	\s-1No\s+1	trim leading blank lines from text parts
 Verbose	boolean	\s-1No\s+1	trace envelope and \s-1MIME\s+1 processing
 .fi
 .PP
@@ -635,6 +636,13 @@ Set the vertical text line height and spacing.
 Set the point size to use in setting plain text.
 (Equivalent to the
 .B \-p
+option.)
+.TP 15
+.B TrimText
+Control whether or not leading blank lines will be trimmed from text parts.
+If the text part is completely empty, it will effectively be skipped.
+(Equivalent to the
+.B \-T
 option.)
 .TP 15
 .B Verbose
