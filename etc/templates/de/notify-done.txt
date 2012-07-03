@@ -21,6 +21,6 @@ Ihr Fax Auftrag an $number wurde erfolgreich abgeschlossen.
                Geschickt von: $client
                        JobID: $jobid
                    GruppenID: $groupid
-            KommunikationsID: c$commid
+            KommunikationsID: $commid
 
 Verarbeitungszeit $JTIME.

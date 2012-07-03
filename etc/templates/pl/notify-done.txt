@@ -21,6 +21,6 @@ Zadanie fax do $number zakończone powodzeniem.
             Nadano przez: $client
               ID zadania: $jobid
                 ID grupy: $groupid
-          ID Komunikacji: c$commid
+          ID Komunikacji: $commid
 
 Czas przetwarzania $JTIME.

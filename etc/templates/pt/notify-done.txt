@@ -21,6 +21,6 @@ O seu fax para $number enviado com êxito.
                 Enviado De: $client
                    IDEnvio: $jobid
                    IDGrupo: $groupid
-                     IDCom: c$commid
+                     IDCom: $commid
 
 Tempo gasto no processamento $JTIME.

@@ -11,6 +11,6 @@ Votre message à $number a été envoyé avec succès.
          Provenance: $client
         Nº de tâche: $jobid
        Nº de groupe: $groupid
-Nº de communication: c$commid
+Nº de communication: $commid
 
 Le temps de traitement a été de $JTIME.

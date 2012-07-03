@@ -21,6 +21,6 @@ Your job to $number was completed successfully.
    Submitted From: $client
             JobID: $jobid
           GroupID: $groupid
-           CommID: c$commid
+           CommID: $commid
 
 Processing time was $JTIME.

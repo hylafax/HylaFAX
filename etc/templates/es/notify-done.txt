@@ -21,6 +21,6 @@ Su trabajo fax para $number se ha cumpletado con éxito.
                  Sometido De: $client
                    IDTrabajo: $jobid
                      IDGrupo: $groupid
-                       IDCom: c$commid
+                       IDCom: $commid
 
 El tiempo de procesamiento fue de $JTIME.

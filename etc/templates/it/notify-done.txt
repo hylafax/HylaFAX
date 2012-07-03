@@ -21,6 +21,6 @@ Il fax per $number è stato completato con successo.
                Inviato da: $client
                     JobID: $jobid
                   GroupID: $groupid
-                   CommID: c$commid
+                   CommID: $commid
 
 Il tempo di elaborazione è stato $JTIME.

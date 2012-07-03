@@ -13,7 +13,7 @@ désignée.
        Nº de groupe: $groupid
          Expéditeur: $sender
    Adresse Courriel: $mailaddr
-Nº de communication: c$commid
+Nº de communication: $commid
               Modem: $modem
          Provenance: $client
     Largeur de page: $pagewidth  (mm)

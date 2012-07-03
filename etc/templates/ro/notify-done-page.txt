@@ -12,6 +12,6 @@ Modem:       $modem
 Expediat de: $client
 JobID:       $jobid
 GroupID:     $groupid
-CommID:      c$commid
+CommID:      $commid
 
 Procesarea a durat $JTIME.
