@@ -147,7 +147,8 @@ main(int argc, char** argv)
         fatal("%s: open: %s", fifoname, strerror(errno));
     }
     cmdlen = snprintf(cmd, sizeof(cmd), cmdfmt, arg);
-    if (write(fifo, cmd, cmdlen) != cmdlen) {
+    cmdlen++;              /* Include NUL character */
+    if (cmdlen < 1 || cmdlen > sizeof(cmd) || write(fifo, cmd, cmdlen) != cmdlen) {
         fatal("FIFO write failed for command (%s)", strerror(errno));
     }
     (void) close(fifo);
