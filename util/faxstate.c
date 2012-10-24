@@ -135,7 +135,8 @@ main(int argc, char** argv)
             fatal("%s: open: %s", FAX_FIFO, strerror(errno));
         }
         cmdlen = snprintf(cmd, sizeof(cmd), "+%s:%s", devid, arg);
-        if (cmdlen < 0 || cmdlen >= sizeof(cmd) || write(fifo, cmd, cmdlen) != cmdlen) {
+        cmdlen++;              /* Include NUL character */
+        if (cmdlen < 1 || cmdlen >= sizeof(cmd) || write(fifo, cmd, cmdlen) != cmdlen) {
             fatal("FIFO write failed for command (%s)", strerror(errno));
         }
     } else {
@@ -146,7 +147,8 @@ main(int argc, char** argv)
             fatal("%s: open: %s", fifoname, strerror(errno));
         }
         cmdlen = snprintf(cmd, sizeof(cmd), "S%s", arg);
-        if (cmdlen < 0 || cmdlen >= sizeof(cmd) || write(fifo, cmd, cmdlen) != cmdlen) {
+        cmdlen++;              /* Include NUL character */
+        if (cmdlen < 1 || cmdlen >= sizeof(cmd) || write(fifo, cmd, cmdlen) != cmdlen) {
             fatal("FIFO write failed for command (%s)", strerror(errno));
         }
     }

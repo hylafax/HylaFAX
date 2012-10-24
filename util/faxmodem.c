@@ -315,7 +315,8 @@ main(int argc, char** argv)
     } else {
         cmdlen = snprintf(cmd, sizeof(cmd), "+%s:R%c%08x", devname, canpoll, caps);
     }
-    if (cmdlen < 0 || cmdlen > sizeof(cmd) || write(fifo, cmd, cmdlen) != cmdlen) {
+    cmdlen++;              /* Include NUL character */
+    if (cmdlen < 1 || cmdlen > sizeof(cmd) || write(fifo, cmd, cmdlen) != cmdlen) {
         fatal("%s: FIFO write failed for command (%s)",
             argv[0], strerror(errno));
     }

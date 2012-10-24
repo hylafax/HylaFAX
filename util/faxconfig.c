@@ -128,7 +128,8 @@ main(int argc, char** argv)
                 cmdlen = snprintf(cmd, cmdsize, "C%s%s:%s",
                     isQueuer ? ":" : "", argv[optind], argv[optind+1]);
             }
-            if (cmdlen < 0 || cmdlen >= cmdsize || write(fifo, cmd, cmdlen) != cmdlen) {
+            cmdlen++;              /* Include NUL character */
+            if (cmdlen < 1 || cmdlen > cmdsize || write(fifo, cmd, cmdlen) != cmdlen) {
                 fatal("%s: FIFO write failed for command (%s)",
             	    argv[0], strerror(errno));
             }
