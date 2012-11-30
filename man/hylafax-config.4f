@@ -189,6 +189,7 @@ NotifyCmd\(S1	string	\s-1bin/notify\s+1	user notification command script
 PageChop\(S1	string	\s-1last\s+1	control automatic truncation of trailing whitespace
 PageChopThreshold\(S1	float	\s-13.0\s+1	whitespace truncation threshold (inches)
 PCL2FaxCmd\(S1	string	\s-1bin/pcl2fax\s+1	PCL \s-1RIP\s+1 command script
+PDF2FaxCmd\(S1	string	\s-1bin/pdf2fax\s+1	PDF \s-1RIP\s+1 command script
 PercentGoodLines	integer	\s-195\s+1	percentage of good rows for \s-1OK\s+1 page quality
 PollLockPokeModem	boolean	\s-1false\s+1	check on modem every time the lock is polled
 PollLockWait\(S2	integer	\s-130\s+1	polling interval for lockfile presence/removal (secs)
@@ -1298,6 +1299,12 @@ Note that this value is specified in inches.
 .TP
 .B PCL2FaxCmd\(S1
 The command to invoke to convert a HP-PCL document submitted
+for transmission to
+.SM TIFF/F,
+suitable for transmission.
+.TP
+.B PDF2FaxCmd\(S1
+The command to invoke to convert a PDF document submitted
 for transmission to
 .SM TIFF/F,
 suitable for transmission.
