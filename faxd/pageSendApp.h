@@ -47,6 +47,9 @@ public:
 	u_int pageSendApp::*p;
 	u_int		 def;
     };
+
+    static int	terminateSignal;	// Termination signal received
+
 private:
 // runtime state
     bool	ready;			// modem ready for use

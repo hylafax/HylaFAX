@@ -50,6 +50,9 @@ public:
 	bool faxSendApp::* p;
 	bool		 def;
     };
+
+    static int	terminateSignal;	// Termination signal received
+
 private:
 // runtime state
     bool	ready;			// modem ready for use

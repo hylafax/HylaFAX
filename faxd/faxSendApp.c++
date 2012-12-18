@@ -49,6 +49,7 @@
  */
 
 faxSendApp* faxSendApp::_instance = NULL;
+int faxSendApp::terminateSignal = 0;
 
 faxSendApp::faxSendApp(const fxStr& devName, const fxStr& devID)
     : FaxServer(devName, devID)
@@ -451,13 +452,18 @@ usage(const char* appName)
 static void
 sigCleanup(int s)
 {
-    int old_errno = errno;
+    // We keep this simple to avoid deadlocks - see terminate() for actual work
     signal(s, fxSIGHANDLER(sigCleanup));
+    faxSendApp::terminateSignal = s;
+}
+
+static void
+terminate(int s)
+{
     logError("CAUGHT SIGNAL %d", s);
     faxSendApp::instance().close();
     if (!faxSendApp::instance().isRunning())
 	_exit(send_failed);
-    errno = old_errno;
 }
 
 int
@@ -487,8 +493,11 @@ main(int argc, char** argv)
 
     app->initialize(argc, argv);
     app->open();
-    while (app->isRunning() && !app->isReady())
+    while (app->isRunning() && !app->isReady()) {
 	Dispatcher::instance().dispatch();
+	if (faxSendApp::terminateSignal)
+	    terminate(faxSendApp::terminateSignal);
+    }
     FaxSendStatus status;
     if (app->isReady())
 	status = app->send((const char**)&argv[optind], argc-optind);
