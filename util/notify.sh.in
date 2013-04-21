@@ -198,6 +198,7 @@ export SENDTO
 
 case "$WHY:$notify" in
     *":always")                     do_notify;;     # They've asked for it
+    *":never")                      ;;              # Do nothing
 
     "requeued:when done+requeued")  do_notify;;     # Requeued
     "requeued:when requeued")       do_notify;;     # Requeued
