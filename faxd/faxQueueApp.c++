@@ -1574,14 +1574,27 @@ faxQueueApp::sendDone(Batch& batch, int status)
 		req->result = Status(343, "Send program terminated abnormally with exit status %#x", status);
 		req->status = send_failed;
 		logError("JOB %s: %s", (const char*)job.jobid, req->result.string());
-	    } else if ((status >>= 8) == 127) {
-		req->result = Status(343, "Send program terminated abnormally; unable to exec " |
-		    pickCmd(req->jobtype));
-		req->status = send_failed;
-		logError("JOB %s: %s",
-			(const char*)job.jobid, req->result.string());
-	    } else
-		req->status = (FaxSendStatus) status;
+	    } else {
+		switch (status >>= 8) {
+		    case 127:
+			req->result = Status(343, "Send program terminated abnormally; unable to exec %s",
+			    (const char*)pickCmd(req->jobtype) );
+			req->status = send_failed;
+			logError("JOB %s: %s",
+				(const char*)job.jobid, req->result.string());
+			break;
+		    case 255:
+			req->result = Status(343, "Send program terminated abnormally; %s exited with a fatal error",
+			    (const char*)pickCmd(req->jobtype) );
+			req->status = send_failed;
+			logError("JOB %s: %s",
+				(const char*)job.jobid, req->result.string());
+			break;
+		    default:
+			req->status = (FaxSendStatus) status;
+			break;
+		}
+	    }
 	};
 	job.modem = NULL;
 
