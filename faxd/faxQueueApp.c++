@@ -3236,9 +3236,16 @@ faxQueueApp::FIFOJobMessage(const fxStr& jobid, const char* msg)
 	     * This means we can "finish" the prevous job.
 	     */
 	    Job* ojp = (Job*)jp->prev;
-	    jp->start = Sys::now();
-	    jp->pid = ojp->pid;
-	    doneJob(*ojp);
+	    if (ojp != jp && ojp->pid)
+	    {
+		/*
+		 * There is a previous job in the list and it is being sent.
+		 * We assume the message was received in time and terminate the job.
+		 */
+		jp->start = Sys::now();
+		jp->pid = ojp->pid;
+		doneJob(*ojp);
+	    }
 	}
 	Trigger::post(Trigger::SEND_CALL, *jp);
 	break;

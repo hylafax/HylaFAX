@@ -54,4 +54,5 @@ QLink::remove(void)
     next->prev = prev;
     prev->next = next;
     next = this;			// indicates job is not on list
+    prev = this;
 }
