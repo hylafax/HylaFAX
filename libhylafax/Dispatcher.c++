@@ -604,6 +604,31 @@ int Dispatcher::waitFor(
 #else					// System V-style
 	(void) signal(SIGCLD, fxSIGHANDLER(osig));
 #endif
+	/*
+	 * We don't want to starve FIFO files processing on systems
+	 * with a lot of children exiting (thus bypassing the previous select).
+	 * We do this after removing the SIGCHLD handler to be sure to have
+	 * the opportunity to process all FIFO messages sent by a child
+	 * before reaping that child. If not, there would be a small window
+	 * for a child to send a FIFO message, terminate (and have the SIGCHLD
+	 * handler execute after the previous select had exited and before the
+	 * SIGCHLD handler was removed, thus causing the child to be reaped
+	 * before it's FIFO message could be processed.
+	 */
+	if (_cqueue->isReady()) {
+	    //note - this is an array copy, not a pointer assignment
+	    rmaskret = _rmask;
+	    wmaskret = _wmask;
+	    emaskret = _emask;
+	    timeval poll = TimerQueue::zeroTime();
+
+#if CONFIG_BADSELECTPROTO
+	    nfound = select(_nfds,
+		(int*) &rmaskret, (int*) &wmaskret, (int*) &emaskret, &poll);
+#else
+	    nfound = select(_nfds, &rmaskret, &wmaskret, &emaskret, &poll);
+#endif
+	}
     }
 
     return nfound;			// timed out or input available
