@@ -502,10 +502,9 @@ bool Dispatcher::dispatch(timeval* howlong) {
 }
 
 bool Dispatcher::anyReady() const {
-    if (!_cqueue->isEmpty()) {
-        Dispatcher::sigCLD(0);		// poll for pending children
-        return _cqueue->isReady();
-    }
+    if (!_cqueue->isEmpty() && _cqueue->isReady())
+        return true;
+
     for (u_int i = 0; i < _nfds; i++) {
         if (FD_ISSET(i, &_rmaskready) ||
                 FD_ISSET(i, &_wmaskready) || FD_ISSET(i, &_emaskready)) {
