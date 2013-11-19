@@ -60,7 +60,7 @@ ENDDT=
 
 while [ x"$1" != x"" ] ; do
     case $1 in
-    -send*|-csi|-dest*|-speed|-rate|-format|-cidname|-cidnumber)
+    -send*|-csi|-dest*|-speed|-rate|-format|-cidname|-cidnumber|-dev*)
 	    SORTKEY=$1;;
     -age)   shift; AGE=$1;;
     -since) shift; SINCEDT=$1;;
@@ -148,6 +148,16 @@ case $SORTKEY in
 	$2 == "RECV" && NF == 17 { acct(getDF($10), $11, $13, getBR($10), getDF($10), $14, $15, $16); }
 	$2 == "RECV" && NF == 18 { acct(getDF($10), $11, $13, getBR($10), getDF($10), $14, $15, $16); }
 	$2 == "RECV" && NF == 19 { acct(getDFfromDCS($19, $10), $11, $13, getBR($10), getDFfromDCS($19, $10), $14, $15, $16); }
+	'
+    ;;
+-dev*)
+    AWKRULES='
+	$2 == "RECV" && NF == 13 { acct($4, $11, $12, getBR($10), getDF($10), $13); }
+	$2 == "RECV" && NF == 14 { acct($4, $11, $13, getBR($10), getDF($10), $14); }
+	$2 == "RECV" && NF == 16 { acct($4, $11, $13, getBR($10), getDF($10), $14, $15, $16); }
+	$2 == "RECV" && NF == 17 { acct($4, $11, $13, getBR($10), getDF($10), $14, $15, $16); }
+	$2 == "RECV" && NF == 18 { acct($4, $11, $13, getBR($10), getDF($10), $14, $15, $16); }
+	$2 == "RECV" && NF == 19 { acct($4, $11, $13, getBR($10), getDFfromDCS($19, $10), $14, $15, $16); }
 	'
     ;;
 esac

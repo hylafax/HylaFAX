@@ -43,6 +43,7 @@ is a command script that prints a summary of the \*(Fx
 accounting statistics for received facsimile.
 The statistics can be sorted using one of several keys:
 the caller's \s-1CSI\s+1 (default), CIDName (CallID2), CIDNumber (CallID1),
+the input device used for the call,
 the communication speed, or
 the communication data format.
 Statistics are read from the file
@@ -123,6 +124,9 @@ Sort output by CIDName
 .TP 12
 .B \-cidnumber
 Sort output by CIDNumber
+.TP 12
+.B \-dev*
+Sort output by the input device (i.e. modem) used.
 .TP 12
 .B \-format
 Sort output by data format.
