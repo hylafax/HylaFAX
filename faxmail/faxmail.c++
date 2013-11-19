@@ -303,75 +303,71 @@ faxMailApp::run(int argc, char** argv)
     }
 
     /*
-     * If a cover page is desired fill in any info
-     * from the envelope that might be useful.
+     * Fill in any info from the envelope that might be useful.
      */
-    if (job->getAutoCoverPage()) {
-	if (coverTempl.length())
-	    job->setCoverTemplate(coverTempl);
+    if (coverTempl.length())
+	job->setCoverTemplate(coverTempl);
+    /*
+     * If nothing has been specified for a
+     * regarding field on the cover page and
+     * a subject line exists, use that info.
+     */
+    if (job->getCoverRegarding() == "" && (s = findHeader("subject"))) {
+	fxStr subj(*s);
+	while (subj.length() > 3 && strncasecmp(subj, "Re:", 3) == 0)
+	    subj.remove(0, subj.skip(3, " \t"));
+	job->setCoverRegarding(subj);
+    }
+    /*
+     * Likewise for the recipient name.
+     */
+    if (job->getCoverName() == "" &&
+	    ((s = findHeader("x-fax-to")) || (s = findHeader("to")))) {
 	/*
-	 * If nothing has been specified for a
-	 * regarding field on the cover page and
-	 * a subject line exists, use that info.
+	 * Try to extract a user name from the to information.
 	 */
-	if (job->getCoverRegarding() == "" && (s = findHeader("subject"))) {
-	    fxStr subj(*s);
-	    while (subj.length() > 3 && strncasecmp(subj, "Re:", 3) == 0)
-		subj.remove(0, subj.skip(3, " \t"));
-	    job->setCoverRegarding(subj);
-	}
-	/*
-	 * Likewise for the receipient name.
-	 */
-	if (job->getCoverName() == "" &&
-		((s = findHeader("x-fax-to")) || (s = findHeader("to")))) {
-	    /*
-	     * Try to extract a user name from the to information.
-	     */
-	    fxStr to(*s);
-	    u_int l = to.next(0, '<');
-	    u_int tl = to.length();
-	    if (l == tl) {
-		l = to.next(0, '(');
-		if (l != tl)		// joe@foobar (Joe Schmo)
-		    l++, to = to.token(l, ')');
-		else {			// joe@foobar
-		    l = to.next(0, '@');
-		    if (l != tl)
-			to = to.head(l);
-		}
-	    } else {			// Joe Schmo <joe@foobar>
-		to = to.head(l);
+	fxStr to(*s);
+	u_int l = to.next(0, '<');
+	u_int tl = to.length();
+	if (l == tl) {
+	    l = to.next(0, '(');
+	    if (l != tl)		// joe@foobar (Joe Schmo)
+		l++, to = to.token(l, ')');
+	    else {			// joe@foobar
+		l = to.next(0, '@');
+		if (l != tl)
+		    to = to.head(l);
 	    }
-	    // strip any leading&trailing white space
-	    to.remove(0, to.skip(0, " \t"));
-	    to.resize(to.skipR(to.length(), " \t"));
+	} else {			// Joe Schmo <joe@foobar>
+	    to = to.head(l);
+	}
+	// strip any leading&trailing white space
+	to.remove(0, to.skip(0, " \t"));
+	to.resize(to.skipR(to.length(), " \t"));
 
-	    /*
-	     * Remove matched quoting characters, recursively
-	     * If they don't match, we'll assume they are part of
-	     * the larger string, and not "quoting" marks
-	     * The string to must have at least 2 chars for us to
-	     * have anything to work on.
-	     */
-	    for (;to.length() > 1;)
-	    {
-		int i;
-		/* We have 3 sets of quoting chars to look for */
-		const char* remove[] = { "\"\"", "''","()" };
-		for (i = 0; i < 3; i++)
-		    if (to[0] == remove[i][0] &&
-			    to[to.length()-1] == remove[i][1])
-		    {
-			    to.remove(0,1);
-			    to.resize(to.length()-1);
-			    break;
-		    }
-		if (i == 3)		// Nothing found, don't repeat
-			break;
-	    }
-	    job->setCoverName(to);
+	/*
+	 * Remove matched quoting characters, recursively
+	 * If they don't match, we'll assume they are part of
+	 * the larger string, and not "quoting" marks
+	 * The string to must have at least 2 chars for us to
+	 * have anything to work on.
+	 */
+	for (;to.length() > 1;)
+	{
+	    int i;
+	    /* We have 3 sets of quoting chars to look for */
+	    const char* remove[] = { "\"\"", "''","()" };
+	    for (i = 0; i < 3; i++)
+		if (to[0] == remove[i][0] &&
+			to[to.length()-1] == remove[i][1]) {
+		    to.remove(0,1);
+		    to.resize(to.length()-1);
+		    break;
+		}
+	    if (i == 3)		// Nothing found, don't repeat
+		break;
 	}
+	job->setCoverName(to);
     }
 
     /*
