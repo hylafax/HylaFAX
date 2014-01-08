@@ -110,7 +110,7 @@ nextRecord(FILE* db, char line[], u_int size)
 /*
  * Check the user name and host name/address against
  * the list of users and hosts that are permitted to
- * user the server and setup password handling.
+ * use the server and setup password handling.
  */
 bool
 HylaFAXServer::checkuserHosts(FILE* db, const char* name)

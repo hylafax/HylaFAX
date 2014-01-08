@@ -1041,7 +1041,7 @@ HylaFAXServer::updateJobOnDisk(Job& job, fxStr& emsg)
  * Look for a job in the in-memory cache.
  */
 Job*
-HylaFAXServer::findJobInMemmory(const char* jobid)
+HylaFAXServer::findJobInMemory(const char* jobid)
 {
     if (curJob->jobid == jobid)				// fast check
 	return (curJob);
@@ -1207,7 +1207,7 @@ HylaFAXServer::unlockJob(Job& job)
 Job*
 HylaFAXServer::findJob(const char* jobid, fxStr& emsg)
 {
-    Job* job = findJobInMemmory(jobid);
+    Job* job = findJobInMemory(jobid);
     if (job) {
 	/*
 	 * Verify job is still around (another process has

@@ -2,7 +2,7 @@
 /*
  * Copyright (c) 1990-1996 Sam Leffler
  * Copyright (c) 1991-1996 Silicon Graphics, Inc.
- * Copyright (c) 2003 iFax Solitions, Inc.
+ * Copyright (c) 2003 iFax Solutions, Inc.
  *
  * HylaFAX is a trademark of Silicon Graphics
  *

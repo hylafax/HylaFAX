@@ -175,7 +175,7 @@ fi
 
 
 ## We process the NOTIFY_FAXMASTER first, because we want
-## this to go without the attachemnts, if they are used
+## this to go without the attachments, if they are used
 ## Faxmaster goes to $TOADDR, but templates always use SENDTO
 SENDTO="$TOADDR"
 case "$NOTIFY_FAXMASTER:$WHY" in

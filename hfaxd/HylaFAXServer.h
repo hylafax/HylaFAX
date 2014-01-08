@@ -565,7 +565,7 @@ protected:
     void newJobCmd(void);
     bool newJob(fxStr& emsg);
     Job* findJob(const char* jobid, fxStr& emsg);
-    Job* findJobInMemmory(const char* jobid);
+    Job* findJobInMemory(const char* jobid);
     Job* findJobOnDisk(const char* jobid, fxStr& emsg);
     bool updateJobFromDisk(Job& job);
     void replyCurrentJob(const char* leader);

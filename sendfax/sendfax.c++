@@ -335,7 +335,7 @@ sendFaxApp::addDestination(const char* cp)
 }
 
 /*
- * Add a destinations form file
+ * Add destinations from file, one destination per line
  */
 void
 sendFaxApp::addDestinationsFromFile(const char* filename)

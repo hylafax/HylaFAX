@@ -372,7 +372,7 @@ faxQueueApp::processJob(Batch& batch, Job& job, FaxRequest* req)
 }
 
 /*
- * Check if the job requires preparation that should
+ * Check if the job requires preparation that should be
  * done in a fork'd copy of the server.  A sub-fork is
  * used if documents must be converted or a continuation
  * cover page must be crafted (i.e. the work may take
@@ -1658,7 +1658,7 @@ faxQueueApp::doneJob(Job& job)
 
     /*
      * If the sub process really didn't handle batching correctly, it
-     * will have left req->status be left alone.
+     * will have left req->status alone.
      * In this case, we'll leave it for the complete batch to finish and
      * let the normal sendDone batch processing worry about it
      */
@@ -1829,7 +1829,7 @@ faxQueueApp::sendJobDone(Job& job, FaxRequest* req)
 /*
  * Begin the process to insert a job in the queue
  * of ready-to-run jobs.  We run JobControl, and when it's done, it's
- * plased on the ready-to-run queue.
+ * placed on the ready-to-run queue.
  * JobControl is done running
  */
 void
@@ -2704,7 +2704,7 @@ faxQueueApp::runScheduler()
 		 * This job would exceed the max number of concurrent
 		 * calls that may be made to this destination.  Mark it
 		 * as ``blocked'' for the destination; the job will
-		 * be stay ready to run and go when one of the existing
+		 * stay ready to run and go when one of the existing
 		 * jobs terminates.
 		 */
 		blockJob(job, *req, Status(337, "Blocked by concurrent calls"));
@@ -3233,7 +3233,7 @@ faxQueueApp::FIFOJobMessage(const fxStr& jobid, const char* msg)
 	{
 	    /*
 	     * We've now started a new job as part of a batch.
-	     * This means we can "finish" the prevous job.
+	     * This means we can "finish" the previous job.
 	     */
 	    Job* ojp = (Job*)jp->prev;
 	    if (ojp != jp && ojp->pid)
