@@ -665,10 +665,10 @@ faxQueueApp::prepareJob(Job& job, FaxRequest& req,
     int vres = req.resolution;
     int usexvres = req.usexvres;
     /*
-     * System overrides in destcontrols:
-     * VRes: we check for vres = 98 or vres = 196 in destroncontrols;
+     * System overrides in jobcontrol:
+     * VRes: we check for vres = 98 or vres = 196 in jobcontrol;
      *       if vres is not set getVRes returns 0.
-     * UseXVres: we check for usexvres = 0 or usexvres = 1 in destcontrols;
+     * UseXVres: we check for usexvres = 0 or usexvres = 1 in jobcontrol;
      *           if usexvres is not set getUseXVRes retuns -1.
      */
     if (job.getJCI().getVRes() == 98)
