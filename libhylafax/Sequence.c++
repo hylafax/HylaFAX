@@ -75,7 +75,7 @@ u_long Sequence::getNext(const char* name, fxStr& emsg)
     if (n > 0) {
         seqnum = atol(line);
     }
-    if (seqnum < 1 || seqnum >= MAXSEQNUM) {
+    if (seqnum < 1 || seqnum > MAXSEQNUM) {
         logWarning(NLS::TEXT("%s: Invalid sequence number \"%s\", resetting to 1"),
             name, line);
         seqnum = 1;
