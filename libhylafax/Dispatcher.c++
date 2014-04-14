@@ -572,10 +572,12 @@ int Dispatcher::waitFor(
 #else					// System V-style
 	osig = (void (*)())signal(SIGCLD, fxSIGHANDLER(&Dispatcher::sigCLD));
 #endif
+	Dispatcher::sigCLD(0);		// poll for pending children
     }
     /*
      * If SIGCLD is pending then it may be delivered on
-     * exiting from the kernel after the above sig* call;
+     * exiting from the kernel after the above sig* call
+     * or would have been processed in the poll above;
      * if so then we don't want to block in the select.
      */
     if (!_cqueue->isReady()) {
