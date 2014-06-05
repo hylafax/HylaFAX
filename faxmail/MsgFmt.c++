@@ -152,7 +152,9 @@ MsgFmt::parseHeaders(FILE* fd, u_int& lineno)
 	if (len > 0 && !isspace(line[0])) { 
 	    u_int l = 0;
 	    field = line.token(l, ':');
-	    if (field != "" && l < len) {	// record new header
+	    if (line[l-1] != ':') {		// invalid header line with no semi-colon
+		field = "";
+	    } else if (field != "") {		// record new header
 		fields.append(field);
 		// skip leading whitespace
 		for (; l < len && isspace(line[l]); l++)
