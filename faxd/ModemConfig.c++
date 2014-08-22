@@ -776,23 +776,21 @@ ModemConfig::setConfigItem(const char* tag, const char* value)
 	class2ECMType = getECMType(value);
     else if (streq(tag, "distinctiverings"))
     	parseDR(value);
-    else if (streq(tag, "callidpattern") || streq(tag, "callidanswerlength") ) {
-	if (tag[6] == 'p') callidIndex++;	// only increment on instances of "Pattern"
+    else if (streq(tag, "callidpattern")) {
+	callidIndex++;
 	if (idConfig.length() < callidIndex+1 && callidIndex != (u_int) -1)
 	    idConfig.resize(callidIndex+1);
-	if (tag[6] == 'p') {
-	    idConfig[callidIndex].answerlength = 0;	// we must initialize this
-	    idConfig[callidIndex].pattern = value;
-	    configTrace("CallID[%d].pattern = \"%s\"", callidIndex,
-		    (const char*)idConfig[callidIndex].pattern);
-	} else {
-	    if (callidIndex != (u_int) -1) {
-		idConfig[callidIndex].answerlength = atoi(value);
-		configTrace("CallID[%d].answerlength = %d", callidIndex,
-		    idConfig[callidIndex].answerlength);
-	    } else
-		configError("No index for Call ID Answer Length");
-	}
+	idConfig[callidIndex].answerlength = 0;	// we must initialize this
+	idConfig[callidIndex].pattern = value;
+	configTrace("CallID[%d].pattern = \"%s\"", callidIndex,
+		(const char*)idConfig[callidIndex].pattern);
+    } else if (streq(tag, "callidanswerlength") ) {
+	if (callidIndex != (u_int) -1) {
+	    idConfig[callidIndex].answerlength = atoi(value);
+	    configTrace("CallID[%d].answerlength = %d", callidIndex,
+		idConfig[callidIndex].answerlength);
+	} else
+	    configError("No index for Call ID Answer Length");
     } else if (streq(tag, "cidnumber")) {
 	if (idConfig.length() < CallID::NUMBER+1)
 	    idConfig.resize(CallID::NUMBER+1);
