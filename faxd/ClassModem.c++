@@ -1498,7 +1498,7 @@ ClassModem::waitForRings(u_short rings, CallType& type, CallID& callid)
 				protoTrace("MODEM HEARD CNG");
 				break;
 			    }
-			} while (callid.length(j) < conf.idConfig[j].answerlength && (Sys::now()-ringstart < 10));
+			} while ((marked || callid.length(j) < conf.idConfig[j].answerlength) && (Sys::now()-ringstart < 10));
 			/*
 			 * If the sender doesn't send enough DTMF then we want to answer anyway.
 			 */
