@@ -145,8 +145,12 @@ parseQfile()
 
 parseFaxInfo()
 {
+    FILENAME=$1;
+    if [ ! -f "$FILENAME" ] ; then
+        return # cannot do much more without a file
+    fi
     # We use the same basic stuff as parseQfile(), but just to straight assignment
-    AWK_OUTPUT=`$INFO -S '' -s '%s=!=!=!=!=!=!=!=!=' $1 | $AWK -F'=!=!=!=!=!=!=!=!=' '
+    AWK_OUTPUT=`$INFO -S '' -s '%s=!=!=!=!=!=!=!=!=' $FILENAME | $AWK -F'=!=!=!=!=!=!=!=!=' '
     function p(varname,val)
     {
         gsub(/\\047/, "\047\\\\\047\047", val);
