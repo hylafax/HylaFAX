@@ -496,7 +496,7 @@ u_char* MemoryDecoder::convertDataFormat(const Class2Params& params)
 		rows++;
 	    }
 	}
-	delete decodedrow;
+	delete[] decodedrow;
 	// bitmap raster is prepared, pass through JBIG encoding...
 	cc = raster.getLength();
 	u_char* rasterdst = new u_char[cc];
@@ -520,7 +520,7 @@ u_char* MemoryDecoder::convertDataFormat(const Class2Params& params)
 	jbg_enc_options(&jbigstate, 0, 0, 128, 0, 0);
 	jbg_enc_out(&jbigstate);
 	jbg_enc_free(&jbigstate);
-	delete rasterdst;
+	delete[] rasterdst;
 	// image is now encoded into JBIG
 	//resultBuffer[19] |= 0x20;	// set VLENGTH = 1, if someday we want to transmit NEWLEN
 	cc = resultBuffer.getLength();

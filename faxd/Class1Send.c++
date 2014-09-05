@@ -562,7 +562,7 @@ Class1Modem::sendTCF(const Class2Params& params, u_int ms)
     u_char* tcf = new u_char[tcfLen];
     memset(tcf, 0, tcfLen);
     bool ok = transmitData(curcap->value, tcf, tcfLen, frameRev, true);
-    delete tcf;
+    delete[] tcf;
     return ok;
 }
 
@@ -1946,14 +1946,14 @@ Class1Modem::sendPage(TIFF* tif, Class2Params& params, u_int pageChop, u_int ppm
 	    if (fp > fill && rc) {
 		rc = sendPageData(fill, fp-fill, bitrev, (params.ec != EC_DISABLE), eresult);
 	    }
-	    delete fill;
+	    delete[] fill;
 	} else {
 	    /*
 	     * No EOL-padding needed, just jam the bytes.
 	     */
 	    rc = sendPageData(dp, (u_int) totdata, bitrev, (params.ec != EC_DISABLE), eresult);
 	}
-	delete data;
+	delete[] data;
 	if (imagefd > 0) {
 	    Sys::close(imagefd);
 	    imagefd = 0;

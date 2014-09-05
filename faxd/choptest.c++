@@ -143,7 +143,7 @@ main(int argc, char* argv[])
 			);
 		    }
 		}
-		delete data;
+		delete[] data;
 	    }
 	}
     } while (TIFFReadDirectory(tif));

@@ -553,7 +553,7 @@ main(int argc, char* argv[])
 			fatal(_("%s: Write error at strip %u, writing %lu bytes"), 
 			    output, strip, (u_long) totbytes);
 		}
-		delete data;
+		delete[] data;
 	    }
 	}
 	pageNumber++;

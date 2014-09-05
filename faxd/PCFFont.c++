@@ -184,12 +184,12 @@ PCFFont::read(const char* name)
 	bitmaps = new u_char[sizebitmaps];
 	if (!bitmaps) {
 	    error("No space for bitmap data array");
-	    delete offsets;
+	    delete[] offsets;
 	    return (false);
 	}
 	if (fread(bitmaps, (u_int) sizebitmaps, 1, file) != 1) {
 	    error("Error reading bitmap data");
-	    delete offsets;
+	    delete[] offsets;
 	    return (false);
 	}
 	if (bitOrder() != CONFIG_BIT)
@@ -214,7 +214,7 @@ PCFFont::read(const char* name)
 	    u_char* padbitmaps = new u_char[sizepadbitmaps];
 	    if (!padbitmaps) {
 		error("No space for padded bitmap data array");
-		delete offsets;
+		delete[] offsets;
 		return (false);
 	    }
 	    int newoff = 0;
@@ -234,11 +234,11 @@ PCFFont::read(const char* name)
 	    metrics[j].bits = bitmaps + offsets[j];
 	    if ((unsigned long) metrics[j].bits & 1) {
 		error("Internal error, bitmap data not word-aligned");
-		delete offsets;
+		delete[] offsets;
 		return (false);
 	    }
 	}
-	delete offsets;
+	delete[] offsets;
     } else {
 	error("Can not seek to bitmap data");
 	return (false);

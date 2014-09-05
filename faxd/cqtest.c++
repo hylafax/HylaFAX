@@ -579,7 +579,7 @@ main(int argc, char* argv[])
 			cq.checkQuality(), params, emsg);
 		} else
 		    printf(_("Read error on strip %u\n"), strip);
-		delete data;
+		delete[] data;
 	    }
 	}
 	TIFFSetField(tifout, TIFFTAG_IMAGELENGTH, cq.recvEOLCount);
