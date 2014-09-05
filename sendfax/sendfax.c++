@@ -354,6 +354,7 @@ sendFaxApp::addDestinationsFromFile(const char* filename)
     } else {
 	fatal(_("%s: no such file"), filename);
     }
+    fclose(destfile);
 }
 
 /*

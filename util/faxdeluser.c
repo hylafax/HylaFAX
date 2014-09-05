@@ -73,6 +73,7 @@ main(int argc, char** argv)
     if (fd == -1) {
         snprintf(buff, sizeof(buff), "Error cannot open file %s", newhostfile);
         perror(buff);
+        fclose(hf);
         return -1;
     }
     while (fgets(buff, sizeof(buff), hf)) {
@@ -94,6 +95,8 @@ main(int argc, char** argv)
             if (write(fd, buff, strlen(buff)) == -1) {
                 snprintf(buff, sizeof(buff), "Error writing to file %s", newhostfile);
                 perror(buff);
+                fclose(hf);
+                close(fd);
                 return -1;
             }
         }
