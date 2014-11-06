@@ -235,6 +235,7 @@ fxArray::swap(u_int p1, u_int p2)
     memcpy(tmp,(void*)(data+p1),elementsize);
     memcpy((void*)(data+p1),(void*)(data+p2),elementsize);
     memcpy((void*)(data+p2),tmp,elementsize);
+    if (tmp != buffer) free(tmp);
 }
 
 u_int
