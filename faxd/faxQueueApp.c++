@@ -462,6 +462,7 @@ faxQueueApp::prepareStart(Batch& batch, Job& job, FaxRequest* req)
 	    Sys::now() + random() % requeueInterval);
 	delete req;
 	fillBatch(batch);
+	break;
     default:				// parent, setup handler to wait
 	batch.startPrepare(job, pid);
 	job.pid = pid;
