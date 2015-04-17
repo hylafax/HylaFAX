@@ -216,12 +216,14 @@ if [ -f $FILE ]; then
 
     fi
 else
-    #
-    # Generate notification mail for a failed attempt.
-    # There is no file to send...
-    #
-    CreateMailMessage etc/templates/$TEMPLATE/faxrcvd-failure.txt \
-    	2>$ERRORSTO | $SENDMAIL -f"$FROMADDR" -oi "$TOADDR"
+    if [ "$NOTIFY_FAXMASTER" != "never" ]; then
+	#
+	# Generate notification mail for a failed attempt.
+	# There is no file to send...
+	#
+	CreateMailMessage etc/templates/$TEMPLATE/faxrcvd-failure.txt \
+	    2>$ERRORSTO | $SENDMAIL -f"$FROMADDR" -oi "$TOADDR"
+    fi
 fi
 
 CleanupPrivateTmp
