@@ -103,12 +103,17 @@ main(int argc, char** argv)
     }
     fclose(hf);
     close(fd);
-    if (rename(newhostfile, hostfile)) {
+
+    /* Preserve hostfile ownership */
+    struct stat sb;
+    if (stat(hostfile, &sb) < 0 ||
+      chown(newhostfile, sb.st_uid, sb.st_gid) < 0 ||
+      chmod(newhostfile, sb.st_mode) < 0) {
         perror("Error writing hosts file");
         return -1;
     }
-    pw = getpwnam(FAX_USER);
-    if (pw == NULL || chown(hostfile, pw->pw_uid, pw->pw_uid)) {
+
+    if (rename(newhostfile, hostfile)) {
         perror("Error writing hosts file");
         return -1;
     }
