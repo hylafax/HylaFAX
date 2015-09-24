@@ -322,7 +322,7 @@ HylaFAXServer::cvtPasswd(const char* type, const char* pass, fxStr& result)
 	return (true);
     }
     if (strlen(pass) <= 5) {
-	reply(500, "%s password is too short; use 5-8 characters.", type);
+	reply(500, "%s password is too short; use 6-8 characters.", type);
 	return (false);
     }
     if (isAllLower(pass)) {
