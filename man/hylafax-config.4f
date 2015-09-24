@@ -135,7 +135,9 @@ ContCoverPage\(S1	string	\-	continuation cover page template filename
 CountryCode\(S2	string	\-	local country code
 CountSkippedPages	boolean	\s-1Yes\s+1	Count skipped pages in the page counts/totals when sending
 DestControls\(S1	obsolete	\-	Obsoleted by JobControl
+DeviceGroup	string	\-	owner user to use for modem device
 DeviceMode	octal	\s-10600\s+1	protection mode to use for modem device
+DeviceUser	string	\s-1\fIsee below\fP\s+1	owner group to use for modem device
 DialStringRules\(S2	string	\-	dial string rules file
 DistinctiveRings	string	\-	configuration for distinctive ring cadences
 DRingOff	string	\-	distinctive ring ``off'' cadence indicator
@@ -228,8 +230,10 @@ UseJobTSI	boolean	\s-1No\s+1	use job-specified TSI instead of \s-1LocalIdentifie
 UseJobTagLine	boolean	\s-1Yes\s+1	Allow use of job-specified Tagline instead of \s-1TagLineFormat\s+1
 UUCPLockMode\(S2	octal	\s-10444\s+1	protection mode for \s-1UUCP\s+1 lock files
 UUCPLockDir\(S2	string	\s-1\fIsee below\fP\s+1	\s-1UUCP\s+1 lockfile directory
+UUCPLockGroup\(S2	string	\-	\s-1UUCP\s+1 lockfile group
 UUCPLockTimeout\(S2	integer	\s-130\s+1	time before removing stale \s-1UUCP\s+1 lockfile
 UUCPLockType\(S2	string	\s-1\fIsee below\fP\s+1	\s-1UUCP\s+1 lockfile type
+UUCPLockUser\(S2	string	\s-1\fIsee below\fP\s+1	\s-1UUCP\s+1 lockfile user
 VGettyArgs	string	\-	arguments passed to voice getty program
 WedgedCmd\(S1	string	\s-1bin/wedged\s+1	command to run when modem is wedged
 .sp .5
@@ -770,16 +774,26 @@ incremented on skipped pages, and faxq will notify clients via triggers of them
 as well.  If the are not to be counted, then tagline page counts will act as if
 the pages never existed, and not faxq trigger notifications will be sent.
 .TP
+.B DeviceGroup
+A string that specifies the owner group the server should set for the
+modem device file.
+If unset, group is not changed.
+.TP
 .B DeviceMode
 The file protection mode that the server should set for the
 modem device file.
 Note that this value is given in octal.
 The default value of 0600 implies that only the
-facsimile user (usually 
-.IR uucp )
+facsimile user (as set by
+.IR DeviceUser )
 can access the modem.
 See also
 .IR chmod (2).
+.TP
+.B DeviceUser
+A string that specifies the owner the server should set for the
+modem device file.
+Default varies per platform. Usually uucp or hylafax.
 .TP
 .B DialStringRules\(S2
 The pathname of the file that holds the rules for processing
@@ -1758,6 +1772,13 @@ The pathname of the directory in which
 .SM UUCP
 lockfiles are to be created.
 .TP
+.B UUCPLockGroup\(S2
+A string that specifies the owner group of
+.SM UUCP
+lockfile to create.
+If unset, uses primary group of
+.BR UUCPLockUser .
+.TP
 .B UUCPLockTimeout\(S2
 The time in seconds to wait before removing a \fIstale\fP
 .SM UUCP
@@ -1787,6 +1808,12 @@ This upper-to-lower case conversion is useful for systems such as
 .SM SCO
 where the convention is to name devices with upper-case letters, but
 create lockfiles with lower-case letters.
+.TP
+.B UUCPLockUser\(S2
+A string that specifies the owner of
+.SM UUCP
+lockfile to create.
+Default varies per platform. Usually uucp or hylafax.
 .TP
 .B VGettyArgs
 A string that indicates whether or not the server should invoke

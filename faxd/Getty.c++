@@ -24,7 +24,6 @@
  * OF THIS SOFTWARE.
  */
 #include "Getty.h"
-#include "UUCPLock.h"
 
 #include <termios.h>
 #include <sys/param.h>
@@ -41,10 +40,19 @@ Getty::Getty(const char* p, const fxStr& l, const fxStr& s)
     , speed(s)
     , tzVar("TZ")
     , langVar("LANG")
+    , lockMode(-1)
 {
     pid = 0;
     argv[0] = NULL;
     argv[1] = NULL;
+
+    fxStr device = fxStr::format("%s" | line, _PATH_DEV);
+    struct stat sb;
+    if (Sys::fstat(device, sb)) {
+	lockUid = sb.st_uid;
+	lockGid = sb.st_gid;
+	lockMode = sb.st_mode;
+    }
 }
 
 Getty::~Getty()
@@ -228,9 +236,13 @@ void
 Getty::hangup()
 {
     // NB: this is executed in the parent
-    fxStr device = fxStr::format("%s" | line, _PATH_DEV);
-    Sys::chown(device, UUCPLock::getUUCPUid(), UUCPLock::getUUCPGid());
-    Sys::chmod(device, 0600);			// reset protection
+
+    if (lockMode != -1) {
+	// Reset UUCP lock file ownership and modes:
+	fxStr device = fxStr::format("%s" | line, _PATH_DEV);
+	Sys::chown(device, lockUid, lockGid);
+	Sys::chmod(device, lockMode);
+    }
 }
 
 extern void vlogError(const char* fmt, va_list ap);

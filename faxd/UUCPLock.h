@@ -34,20 +34,21 @@
 class UUCPLock {
 private:
     fxStr	file;			// lock file pathname
+    fxStr	lockUser;		// lock file owner user
+    fxStr	lockGroup;		// lock file owner group
+    uid_t	lockUid;		// lock file owner user id
+    gid_t	lockGid;		// lock file owner group id
     mode_t	mode;			// lock file mode
     bool	locked;			// is lock currently held
 
-    static uid_t UUCPuid;
-    static gid_t UUCPgid;
-    static void setupIDs();
-
     static time_t lockTimeout;
 
+    void	setupIDs();
     bool	create();		// create lock file
     bool	isNewer(time_t age);	// is lock file newer than age
     bool	ownerExists(int fd);	// does owning process exist
 protected:
-    UUCPLock(const fxStr& pathname, mode_t mode);
+    UUCPLock(const fxStr& pathname, mode_t mode, const fxStr& u, const fxStr& g);
 
     virtual void setPID(pid_t) = 0;
     virtual bool writeData(int fd) = 0;
@@ -55,15 +56,15 @@ protected:
 public:
     virtual ~UUCPLock();
 
-    static uid_t getUUCPUid();
-    static gid_t getUUCPGid();
     static void setLockTimeout(time_t);
 
     static UUCPLock* newLock(		// public interface to create a lock
 	const char* type,		// lock file type
 	const fxStr& prefix,		// lock file directory+prefix
 	const fxStr& device,		// device pathname
-	mode_t mode);			// file creation mode
+	mode_t mode,			// file creation mode
+	const fxStr& lockUser = UUCP_LOCKUSER,	// lock file owner user
+	const fxStr& lockGroup = fxStr::null);	// lock file owner group
 
     bool	isLocked() const;	// device is locked
     bool	lock();			// lock device

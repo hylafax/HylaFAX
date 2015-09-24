@@ -3326,6 +3326,8 @@ faxQueueApp::stringtag faxQueueApp::strings[] = {
 { "countrycode",	&faxQueueApp::countryCode },
 { "longdistanceprefix",	&faxQueueApp::longDistancePrefix },
 { "internationalprefix",&faxQueueApp::internationalPrefix },
+{ "uucplockuser",	&faxQueueApp::uucpLockUser,	UUCP_LOCKUSER },
+{ "uucplockgroup",	&faxQueueApp::uucpLockGroup},
 { "uucplockdir",	&faxQueueApp::uucpLockDir,	UUCP_LOCKDIR },
 { "uucplocktype",	&faxQueueApp::uucpLockType,	UUCP_LOCKTYPE },
 { "contcoverpage",	&faxQueueApp::contCoverPageTemplate },
@@ -3612,7 +3614,7 @@ UUCPLock*
 faxQueueApp::getUUCPLock(const fxStr& deviceName)
 {
     return UUCPLock::newLock(uucpLockType,
-	uucpLockDir, deviceName, uucpLockMode);
+	uucpLockDir, deviceName, uucpLockMode, uucpLockUser, uucpLockGroup);
 }
 
 u_int faxQueueApp::getTracingLevel() const

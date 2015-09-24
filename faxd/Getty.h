@@ -47,6 +47,9 @@ private:
     fxStr	langVar;		// LANG environment variable
     fxStr       nambuf;
     fxStr       numbuf;
+    uid_t	lockUid;		// UUCP Lock file owner uid
+    gid_t	lockGid;		// UUCP Lock file owner gid
+    mode_t	lockMode;		// UUCP Lock file mode
 protected:
     Getty(const char* program, const fxStr& line, const fxStr& speed);
 

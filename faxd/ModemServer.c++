@@ -39,12 +39,13 @@
 #include <sys/termiox.h>
 #endif
 #include <sys/file.h>
+#include <pwd.h>
+#include <grp.h>
 
 #include "Dispatcher.h"
 #include "FaxTrace.h"
 #include "FaxMachineLog.h"
 #include "ModemServer.h"
-#include "UUCPLock.h"
 #include "Class0.h"
 
 #include "config.h"
@@ -603,17 +604,32 @@ ModemServer::openDevice(const char* dev)
 	return (false);
     }
 #endif
-    /*
-     * NB: we stat and use the gid because passing -1
-     *     through the gid_t parameter in the prototype
-     *	   causes it to get truncated to 65535.
-     */
-    struct stat sb;
-    (void) Sys::fstat(modemFd, sb);
+    const passwd *pwd = getpwnam(deviceUser);
+    if (!pwd)
+	faxApp::fatal("Can not deduce identity of %s", (const char*) deviceUser);
+    uid_t deviceUid = pwd->pw_uid;
+    gid_t deviceGid;
+    if (deviceGroup == fxStr::null || deviceGroup.length() == 0) {
+	// Keep group unchanged
+	/*
+	 * NB: we stat and use the gid because passing -1
+	 *     through the gid_t parameter in the prototype
+	 *     causes it to get truncated to 65535.
+	 */
+	struct stat sb;
+	(void) Sys::fstat(modemFd, sb);
+	deviceGid = sb.st_gid;
+    } else {
+	const group *grp = getgrnam(deviceGroup);
+	if (!grp)
+	    faxApp::fatal("Can not find group %s", (const char*) deviceGroup);
+	deviceGid = grp->gr_gid;
+    }
+    endpwent();			// paranoia
 #if HAS_FCHOWN
-    if (fchown(modemFd, UUCPLock::getUUCPUid(), sb.st_gid) < 0)
+    if (fchown(modemFd, deviceUid, deviceGid) < 0)
 #else
-    if (Sys::chown(dev, UUCPLock::getUUCPUid(), sb.st_gid) < 0)
+    if (Sys::chown(dev, deviceUid, deviceGid) < 0)
 #endif
 	traceServer("%s: chown: %m", dev);
 #if HAS_FCHMOD

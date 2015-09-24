@@ -182,6 +182,7 @@
  * conventions required by different systems such as SCO
  * and SVR4.  Consult the documentation for more details.
  */
+#define	UUCP_LOCKUSER	"@FAXUID@" /* user to create UUCP lock files as */
 #define	UUCP_LOCKDIR	"@UUCP_LOCKDIR@" /* directory for UUCP lock files */
 #define	UUCP_LOCKTYPE	"@UUCP_LOCKTYPE@"		/* UUCP lock file type */
 #define	UUCP_LOCKMODE	0444		/* UUCP lock file creation mode */

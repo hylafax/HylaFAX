@@ -91,6 +91,10 @@ ServerConfig::S_stringtag ServerConfig::strings[] = {
 { "internationalprefix",&ServerConfig::internationalPrefix },
 { "qualifytsi",		&ServerConfig::qualifyTSI },
 { "qualifypwd",		&ServerConfig::qualifyPWD },
+{ "deviceuser",		&ServerConfig::deviceUser,	UUCP_LOCKUSER },
+{ "devicegroup",	&ServerConfig::deviceGroup},
+{ "uucplockuser",	&ServerConfig::uucpLockUser,	UUCP_LOCKUSER },
+{ "uucplockgroup",	&ServerConfig::uucpLockGroup},
 { "uucplockdir",	&ServerConfig::uucpLockDir,	UUCP_LOCKDIR },
 { "uucplocktype",	&ServerConfig::uucpLockType,	UUCP_LOCKTYPE },
 };
@@ -304,7 +308,7 @@ UUCPLock*
 ServerConfig::getUUCPLock(const fxStr& deviceName)
 {
     return UUCPLock::newLock(uucpLockType,
-	uucpLockDir, deviceName, uucpLockMode);
+	uucpLockDir, deviceName, uucpLockMode, uucpLockUser, uucpLockGroup);
 }
 
 bool

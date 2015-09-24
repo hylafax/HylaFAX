@@ -37,6 +37,7 @@ extern "C" {
 }
 #endif
 #include <pwd.h>
+#include <grp.h>
 
 /*
  * UUCP Device Locking Support.
@@ -55,7 +56,7 @@ private:
     bool writeData(int fd);
     bool readData(int fd, pid_t& pid);
 public:
-    AsciiUUCPLock(const fxStr&, mode_t);
+    AsciiUUCPLock(const fxStr&, mode_t, const fxStr&, const fxStr&);
     ~AsciiUUCPLock();
 };
 
@@ -70,13 +71,14 @@ private:
     bool writeData(int fd);
     bool readData(int fd, pid_t& pid);
 public:
-    BinaryUUCPLock(const fxStr&, mode_t);
+    BinaryUUCPLock(const fxStr&, mode_t, const fxStr&, const fxStr&);
     ~BinaryUUCPLock();
 };
 
 UUCPLock*
 UUCPLock::newLock(const char* type,
-    const fxStr& dir, const fxStr& device, mode_t mode)
+    const fxStr& dir, const fxStr& device, mode_t mode,
+    const fxStr& lockUser, const fxStr& lockGroup)
 {
     fxStr pathname(dir);
 
@@ -114,15 +116,19 @@ UUCPLock::newLock(const char* type,
 	}
     }
     if (streq(type, "ascii"))
-	return new AsciiUUCPLock(pathname, mode);
+	return new AsciiUUCPLock(pathname, mode, lockUser, lockGroup);
     else if (streq(type, "binary"))
-	return new BinaryUUCPLock(pathname, mode);
+	return new BinaryUUCPLock(pathname, mode, lockUser, lockGroup);
     else
 	faxApp::fatal("Unknown UUCP lock file type \"%s\"", type);
     return (NULL);
 }
 
-UUCPLock::UUCPLock(const fxStr& pathname, mode_t m) : file(pathname)
+UUCPLock::UUCPLock(const fxStr& pathname, mode_t m, const fxStr& u,
+    const fxStr& g)
+    : file(pathname)
+    , lockUser(u)
+    , lockGroup(g)
 {
     mode = m;
     locked = false;
@@ -135,23 +141,26 @@ UUCPLock::~UUCPLock()
     unlock();
 }
 
-uid_t UUCPLock::UUCPuid = (uid_t) -1;
-gid_t UUCPLock::UUCPgid = (gid_t) -1;
-
 void
 UUCPLock::setupIDs()
 {
-    if (UUCPuid == (uid_t) -1) {
-	const passwd *pwd = getpwnam("uucp");
+    if (lockUid == (uid_t) -1) {
+	const passwd *pwd = getpwnam(lockUser);
 	if (!pwd)
-	    faxApp::fatal("Can not deduce identity of UUCP");
-	UUCPuid = pwd->pw_uid;
-	UUCPgid = pwd->pw_gid;
+	    faxApp::fatal("Can not deduce identity of %s", (const char*) lockUser);
+	lockUid = pwd->pw_uid;
+	if (lockGroup == fxStr::null || lockGroup.length() == 0) {
+	    // Use main group of UUCPLock user
+	    lockGid = pwd->pw_gid;
+	} else {
+	    const group *grp = getgrnam(lockGroup);
+	    if (!grp)
+		faxApp::fatal("Can not find group %s", (const char*) lockGroup);
+	    lockGid = grp->gr_gid;
+	}
 	endpwent();			// paranoia
     }
 }
-uid_t UUCPLock::getUUCPUid() { setupIDs(); return UUCPuid; }
-gid_t UUCPLock::getUUCPGid() { setupIDs(); return UUCPgid; }
 
 time_t UUCPLock::lockTimeout = UUCP_LCKTIMEOUT;
 void UUCPLock::setLockTimeout(time_t t) { lockTimeout = t; }
@@ -178,9 +187,9 @@ UUCPLock::create()
 	Sys::chmod(buff, mode);
 #endif
 #if HAS_FCHOWN
-	(void) fchown(fd, UUCPuid, UUCPgid);
+	(void) fchown(fd, lockUid, lockGid);
 #else
-	Sys::chown(buff, UUCPuid, UUCPgid);
+	Sys::chown(buff, lockUid, lockGid);
 #endif
 	Sys::close(fd);
 
@@ -300,8 +309,9 @@ UUCPLock::check()
 /*
  * ASCII lock file interface.
  */
-AsciiUUCPLock::AsciiUUCPLock(const fxStr& path, mode_t m)
-    : UUCPLock(path, m)
+AsciiUUCPLock::AsciiUUCPLock(const fxStr& path, mode_t m, const fxStr& u,
+    const fxStr& g)
+    : UUCPLock(path, m, u, g)
     , data(UUCP_PIDDIGITS+2)
 { setPID(getpid()); }
 AsciiUUCPLock::~AsciiUUCPLock() {}
@@ -334,8 +344,9 @@ AsciiUUCPLock::readData(int fd, pid_t& pid)
 /*
  * Binary lock file interface.
  */
-BinaryUUCPLock::BinaryUUCPLock(const fxStr& path, mode_t m)
-    : UUCPLock(path, m)
+BinaryUUCPLock::BinaryUUCPLock(const fxStr& path, mode_t m, const fxStr& u,
+    const fxStr& g)
+    : UUCPLock(path, m, u, g)
 { setPID(getpid()); }
 BinaryUUCPLock::~BinaryUUCPLock() {}
 

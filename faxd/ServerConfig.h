@@ -66,6 +66,8 @@ private:
     fxStr	areaCode;		// local area code
     fxStr	countryCode;		// local country code
     DialStringRules* dialRules;		// dial string rules
+    fxStr	uucpLockUser;		// UUCP lock file owner user
+    fxStr	uucpLockGroup;		// UUCP lock file owner group
     fxStr	uucpLockType;		// UUCP lock file type
     fxStr	uucpLockDir;		// UUCP lock file directory
     mode_t	uucpLockMode;		// UUCP lock file creation mode
@@ -85,6 +87,9 @@ private:
 
     SpeakerVolume getVolume(const char* cp);
 protected:
+    fxStr	deviceUser;		// Device file owner user
+    fxStr	deviceGroup;		// Device file owner group
+
     ServerConfig();
 
     void	setupConfig();
