@@ -134,6 +134,7 @@ private:
 // runtime state
     bool	timeout;		// timeout occurred
     bool	abortPrepare;		// job preparation should be aborted
+    int		abortSignal;		// signal used to abort job preparation
     bool	quit;			// terminate server
     int		fifo;			// fifo job queue interface
     QLink	runq;			// list of DestInfo ready to run

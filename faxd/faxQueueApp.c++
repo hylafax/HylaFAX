@@ -423,7 +423,7 @@ faxQueueApp::prepareCleanup(int s)
 {
     int old_errno = errno;
     signal(s, fxSIGHANDLER(faxQueueApp::prepareCleanup));
-    logError("CAUGHT SIGNAL %d, ABORT JOB PREPARATION", s);
+    faxQueueApp::instance().abortSignal = s;
     faxQueueApp::instance().abortPrepare = true;
     errno = old_errno;
 }
@@ -442,6 +442,7 @@ faxQueueApp::prepareStart(Batch& batch, Job& job, FaxRequest* req)
 {
     traceQueue(job, "PREPARE START");
     abortPrepare = false;
+    abortSignal = 0;
     pid_t pid = fork();
     switch (pid) {
     case 0:				// child, do work
@@ -797,6 +798,8 @@ faxQueueApp::prepareJob(Job& job, FaxRequest& req,
 	    updateQFile = true;
 	}    
     }
+    if (abortPrepare)
+	logError("CAUGHT SIGNAL %d, ABORT JOB PREPARATION", abortSignal);
     if (updateQFile)
 	updateRequest(req, job);
     return (status);
