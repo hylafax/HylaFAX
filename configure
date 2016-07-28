@@ -929,7 +929,7 @@ CheckForGandO()
 {
     f=$1
     if test -s $f; then
-	capture grep -i \(error\|warning\) $f || return 1
+	capture grep -E -i "\(error\|warning\)" $f || return 1
     fi
     return 0
 }
