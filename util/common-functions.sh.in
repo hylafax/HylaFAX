@@ -26,12 +26,12 @@ length()
 setInfoSize()
 {
     INFOSIZE=0
-    for ITEM in DICTSENDER DICTPAGES DICTQUALITY DICTSIZE DICTRECEIVED \
+    for hfcf_item in DICTSENDER DICTPAGES DICTQUALITY DICTSIZE DICTRECEIVED \
 		DICTTIMETORECV DICTSIGNALRATE DICTDATAFORMAT DICTERRCORRECT \
 		DICTCALLID1 DICTCALLID2 DICTCALLID3 DICTCALLID4 DICTCALLID \
 		DICTCALLID6 DICTCALLID7 DICTRECEIVEDON DICTCOMMID; do
-	THISLEN="`eval echo "$"$ITEM | wc -m | $SED 's/ //g'`"
-	if [ $THISLEN -gt $INFOSIZE ]; then INFOSIZE=$THISLEN; fi
+	hfcf_thislen="`eval echo "$"$hfcf_item | wc -m | $SED 's/ //g'`"
+	if [ $hfcf_thislen -gt $INFOSIZE ]; then INFOSIZE=$hfcf_thislen; fi
     done
 }
 
@@ -41,14 +41,14 @@ setInfoSize()
 setItemSize()
 {
     ITEMSIZE=0
-    for ITEM in DICTDESTINATION DICTJOBID DICTGROUPID DICTSENDER DICTMAILADDR \
+    for hfcf_item in DICTDESTINATION DICTJOBID DICTGROUPID DICTSENDER DICTMAILADDR \
 		DICTCOMMID DICTMODEM DICTSUBMITTEDFROM DICTPAGEWIDTH \
 		DICTPAGELENGTH DICTRES DICTSTATUS DICTDIALOGS DICTDIALS \
 		DICTCALLS DICTPAGES DICTATTEMPTS DICTDIRNUM DICTRECEIVER DICTQUALITY \
 		DICTPAGEWIDTH DICTPAGELENGTH DICTDATAFORMAT DICTREMOTEEQUIPMENT \
 		DICTREMOTESTATION DICTSIGNALRATE; do
-	THISLEN="`eval echo "$"$ITEM | wc -m | $SED 's/ //g'`"
-	if [ $THISLEN -gt $ITEMSIZE ]; then ITEMSIZE=$THISLEN; fi
+	hfcf_thislen="`eval echo "$"$hfcf_item | wc -m | $SED 's/ //g'`"
+	if [ $hfcf_thislen -gt $ITEMSIZE ]; then ITEMSIZE=$hfcf_thislen; fi
     done
 }
 
@@ -93,13 +93,13 @@ parseQfile()
     #
     # print out variable name and value so we can eval it in the shell
     #
-    VAR_PREFIX="$1"
+    hfcf_var_prefix="$1"
     if [ -n "$2" ] ; then
-        FILENAME=$2;
+        hfcf_filename=$2;
     else
-        FILENAME=$QFILE;
+        hfcf_filename=$QFILE;
     fi
-    if [ ! -f "$FILENAME" ] ; then
+    if [ ! -f "$hfcf_filename" ] ; then
         return # cannot do much more without a file
     fi
     $AWK -F: '
@@ -112,7 +112,7 @@ parseQfile()
         printf "export %s%s\n",var_prefix,varname
     }
     BEGIN {
-        var_prefix="'"$VAR_PREFIX"'";
+        var_prefix="'"$hfcf_var_prefix"'";
         nfiles = 0;
         npins = 0;
     }
@@ -138,19 +138,19 @@ parseQfile()
     # Only parse remaining valid lines and allows for colons to appear in the value part
     /^[a-z]+:/     { str = $0; sub($1":", "", str); p($1, str); next; }
     {printf "# Invalid line> %s\n", $0;}
-    END { p("nfiles", nfiles); p("npins", npins) } ' $FILENAME > $TMPDIR/qfile-awk.sh
+    END { p("nfiles", nfiles); p("npins", npins) } ' $hfcf_filename > $TMPDIR/qfile-awk.sh
     . $TMPDIR/qfile-awk.sh
 
 }
 
 parseFaxInfo()
 {
-    FILENAME=$1;
-    if [ ! -f "$FILENAME" ] ; then
+    hfcf_filename=$1;
+    if [ ! -f "$hfcf_filename" ] ; then
         return # cannot do much more without a file
     fi
     # We use the same basic stuff as parseQfile(), but just to straight assignment
-    AWK_OUTPUT=`$INFO -S '' -s '%s=!=!=!=!=!=!=!=!=' $FILENAME | $AWK -F'=!=!=!=!=!=!=!=!=' '
+    AWK_OUTPUT=`$INFO -S '' -s '%s=!=!=!=!=!=!=!=!=' $hfcf_filename | $AWK -F'=!=!=!=!=!=!=!=!=' '
     function p(varname,val)
     {
         gsub(/\\047/, "\047\\\\\047\047", val);
@@ -178,20 +178,20 @@ mimeEncode()
         return # cannot do much more without a file
     fi
     if [ -n "$2" ] ; then
-        encoding=$2;
+        hfcf_encoding=$2;
     else
-        encoding=$ENCODING;
+        hfcf_encoding=$ENCODING;
     fi
-    encoding=`tolower $encoding`
+    hfcf_encoding=`tolower $hfcf_encoding`
 
     # rather than separate $BASE64ENCODE and $QPENCODE
-    case "$encoding" in
+    case "$hfcf_encoding" in
         base64)
 	    if [ -n "$BASE64ENCODE" ]; then
 
 		# $BASE64ENCODE may contain parameters
-		cmd=`programOfCommand $BASE64ENCODE`
-		if [ -x "$cmd" ]; then
+		hfcf_cmd=`programOfCommand $BASE64ENCODE`
+		if [ -x "$hfcf_cmd" ]; then
 		    (eval $BASE64ENCODE) < $1 2>$ERRORSTO
 		else
 		    c $AWK -f bin/b64-encode.awk < $1 2>$ERRORSTO
@@ -202,8 +202,8 @@ mimeEncode()
         quoted-printable)
 	    if [ -n "$QPENCODE" ]; then
 		# $QPENCODE may contain parameters
-		cmd=`programOfCommand $QPENCODE`
-		if [ -x "$cmd" ]; then
+		hfcf_cmd=`programOfCommand $QPENCODE`
+		if [ -x "$hfcf_cmd" ]; then
 		    (eval $QPENCODE) < $1 2>$ERRORSTO
 		else
 		    c $AWK -f bin/qp-encode.awk < $1 2>$ERRORSTO
@@ -225,15 +225,15 @@ mimeEncode()
 # Returns 1 on success, 0 otherwise.
 matchRegEx()
 {
-  string=$1
-  regex=$2
+  hfcf_string=$1
+  hfcf_regex=$2
 
   # Awk grep and sed ranges can't be trusted to gives the same result
   # on all platforms and locale. :( (Even for digit ranges...
   # fractions can be included in the 0-1 range.)
   # Using C locale should be enough to fix this.
-  echo $string | c $AWK -F=!=!=!=!=!=!=!=!= '
-    '$regex' {print 1; exit;}
+  echo $hfcf_string | c $AWK -F=!=!=!=!=!=!=!=!= '
+    '$hfcf_regex' {print 1; exit;}
     {print 0;}'
 
 }
@@ -247,24 +247,24 @@ matchRegEx()
 headerEncode()
 {
     if [ -n "$1" ] ; then
-        string=$1
+        hfcf_string=$1
     else
         # Nothing to encode
         return
     fi
     if [ -n "$2" ] ; then
-        position=$2
+        hfcf_position=$2
     else
-        position="text"
+        hfcf_position="text"
     fi
 
-    must_encode=false
-    encoded=$string
+    hfcf_must_encode=false
+    hfcf_encoded=$hfcf_string
 
-    case $position in 
+    case $hfcf_position in
         phrase)
-            if [ `matchRegEx "$string" '/^[\0-\177]*$/'` = 1 ]; then
-                echo $string | c $AWK -F=!=!=!=!=!=!=!=!= '
+            if [ `matchRegEx "$hfcf_string" '/^[\0-\177]*$/'` = 1 ]; then
+                echo $hfcf_string | c $AWK -F=!=!=!=!=!=!=!=!= '
                 function simple_quote(text)
                 {
                     gsub(/[\0-\37\177\\\"]/, "\\\\&", text);
@@ -280,31 +280,31 @@ headerEncode()
                 return
             fi
 
-            must_encode=true
+            hfcf_must_encode=true
             ;;
         comment)
-            if [ `matchRegEx "$string" '/[^\40\41\43-\47\52-\176]/'` = 1 ]; then
-                must_encode=true
+            if [ `matchRegEx "$hfcf_string" '/[^\40\41\43-\47\52-\176]/'` = 1 ]; then
+                hfcf_must_encode=true
             fi
             ;;
         text)
-            if [ `matchRegEx "$string" '/[^\40-\176]/'` = 1 ]; then
-                must_encode=true
+            if [ `matchRegEx "$hfcf_string" '/[^\40-\176]/'` = 1 ]; then
+                hfcf_must_encode=true
             fi
             ;;
     esac
 
-    if [ $must_encode = true ]; then
+    if [ $hfcf_must_encode = true ]; then
         # Use the shorter encoded string
-        q_encoded="`echo $string | c $AWK -v ENCODING=Q -v POSITION=$position -f bin/qp-encode.awk 2>$ERRORSTO`"
-        b_encoded="`echo $string | c $AWK -v ENCODING=B -f bin/b64-encode.awk 2>$ERRORSTO`"
-        if [ `length "$q_encoded"` -lt `length "$b_encoded"` ]; then
-            echo $q_encoded;
+        hfcf_q_encoded="`echo $hfcf_string | c $AWK -v ENCODING=Q -v POSITION=$hfcf_position -f bin/qp-encode.awk 2>$ERRORSTO`"
+        hfcf_b_encoded="`echo $hfcf_string | c $AWK -v ENCODING=B -f bin/b64-encode.awk 2>$ERRORSTO`"
+        if [ `length "$hfcf_q_encoded"` -lt `length "$hfcf_b_encoded"` ]; then
+            echo $hfcf_q_encoded;
         else
-            echo $b_encoded;
+            echo $hfcf_b_encoded;
         fi
     else
-        echo $string
+        echo $hfcf_string
     fi
 }
 
@@ -313,26 +313,26 @@ headerEncode()
 headersEncode()
 {
     cat - | 
-        while read line;
+        while read hfcf_line;
         do
-            type=`echo $line | $SED -e 's/:.*$//'`
-            content=`echo $line | $SED -e 's/[^:]*: *//'`
+            hfcf_type=`echo $hfcf_line | $SED -e 's/:.*$//'`
+            hfcf_content=`echo $hfcf_line | $SED -e 's/[^:]*: *//'`
             # Only encode subject, to and from for now.
-            case `tolower $type` in
+            case `tolower $hfcf_type` in
               subject)
-                encoded=`headerEncode "$content"`
-                line="$type: $encoded"
+                hfcf_encoded=`headerEncode "$hfcf_content"`
+                hfcf_line="$hfcf_type: $hfcf_encoded"
                 ;;
               DISABLED_to|DISABLED_from)
-                if [ `matchRegEx "$content" '/<.*>/'` = 1 ]; then
-                  name=`echo $content | $SED -e 's/<[^<>]*>//'`
-                  address=`echo $content | $SED -e 's/.*\(<[^<>]*>\).*/\1/'`
-                  name=`headerEncode "$name" phrase`
-                  line="$type: $name $address"
+                if [ `matchRegEx "$hfcf_content" '/<.*>/'` = 1 ]; then
+                  hfcf_name=`echo $hfcf_content | $SED -e 's/<[^<>]*>//'`
+                  hfcf_address=`echo $hfcf_content | $SED -e 's/.*\(<[^<>]*>\).*/\1/'`
+                  hfcf_name=`headerEncode "$hfcf_name" phrase`
+                  hfcf_line="$hfcf_type: $hfcf_name $hfcf_address"
                 fi
                 ;;
             esac
-            echo $line
+            echo $hfcf_line
         done
 }
 
@@ -436,10 +436,10 @@ CreateMailMessage ()
     # First we take the top part of the e-mail for headers
     # Excluding any "Content-" lines, which need to stay with
     # the actual template content
-    TEMPLATE_PATH=`dirname $1`
+    hfcf_template_path=`dirname $1`
     $SED -n -e '/^$/q;p' $1			\
     	| $GREP -v "^Content"		\
-	| template "$TEMPLATE_PATH" 	\
+	| template "$hfcf_template_path" 	\
 	| headersEncode
 
     # If there are attachments, we are a multipart/mixed
@@ -453,17 +453,17 @@ CreateMailMessage ()
     # Now print the Content-* headers for the template
     $SED -n -e '/^$/q;p' $1			\
     	| $GREP "^Content"		\
-	| template "$TEMPLATE_PATH"
+	| template "$hfcf_template_path"
 
     echo ""
-    body_encoding=`$SED -n -e '/^$/q;p' $1		\
+    hfcf_body_encoding=`$SED -n -e '/^$/q;p' $1		\
     	| $GREP -i "^Content-Transfer-Encoding"		\
-	| template "$TEMPLATE_PATH" 			\
+	| template "$hfcf_template_path" 			\
     	| $SED -e 's/^[^ ]*: *//'`;
-    test "$body_encoding" || body_encoding=7bit;
+    test "$hfcf_body_encoding" || hfcf_body_encoding=7bit;
 
-    $SED -n -e '1,/^$/d;p' $1 | template "$TEMPLATE_PATH" > $TMPDIR/body.txt
-    mimeEncode $TMPDIR/body.txt $body_encoding
+    $SED -n -e '1,/^$/d;p' $1 | template "$hfcf_template_path" > $TMPDIR/body.txt
+    mimeEncode $TMPDIR/body.txt $hfcf_body_encoding
 
     if [ -n "$2" ]; then
 	shift
@@ -499,59 +499,59 @@ BuildAttachArgs ()
 {
     case $1 in
 	PostScript|Postscript|PS|ps)
-	    a_type="application/postscript"
-	    a_desc="FAX Document (PostScript)"
+	    hfcf_a_type="application/postscript"
+	    hfcf_a_desc="FAX Document (PostScript)"
 	    ;;
 	PDF|pdf)
-	    a_type="application/pdf"
-	    a_desc="FAX Document (PDF)"
+	    hfcf_a_type="application/pdf"
+	    hfcf_a_desc="FAX Document (PDF)"
 	    ;;
 	TIFF|tiff|TIF|tif)
-	    a_type="image/tiff"
-	    a_desc="FAX Document (TIFF)"
+	    hfcf_a_type="image/tiff"
+	    hfcf_a_desc="FAX Document (TIFF)"
 	    ;;
     esac
 
-    for i in `LocalSequence 1 $nfiles`
+    for hfcf_i in `LocalSequence 1 $nfiles`
     do
-	eval filename="$"files_"$i"
-	TraceLog "FILE $i: $filename"
-	if [ -f "$filename" ]; then
-	    eval filetype="$"filetype_"$i"
+	eval hfcf_filename="$"files_"$hfcf_i"
+	TraceLog "FILE $hfcf_i: $hfcf_filename"
+	if [ -f "$hfcf_filename" ]; then
+	    eval hfcf_filetype="$"filetype_"$hfcf_i"
 	    if [ "$1" = "raw" ] || [ "$1" = "original" ]; then
-		a_file=$filename;
-		a_name=`basename $filename`;
-		a_desc="FAX Document"
-		case "$filetype" in
+		hfcf_a_file=$hfcf_filename;
+		hfcf_a_name=`basename $hfcf_filename`;
+		hfcf_a_desc="FAX Document"
+		case "$hfcf_filetype" in
 		    PostScript)
-			TraceLog "Attaching $file in PostScript format"
-			a_type="application/postscript"
+			TraceLog "Attaching $hfcf_a_file in PostScript format"
+			hfcf_a_type="application/postscript"
 			;;
 		    PDF)
-			TraceLog "Attaching $file in PDF format"
-			a_type="application/pdf"
+			TraceLog "Attaching $hfcf_a_file in PDF format"
+			hfcf_a_type="application/pdf"
 			;;
 		    TIFF)
-			TraceLog "Attaching $file in TIFF format"
-			a_type="image/tiff"
+			TraceLog "Attaching $hfcf_a_file in TIFF format"
+			hfcf_a_type="image/tiff"
 			;;
 		    *)
-		    TraceLog "Attaching $file in unknown[$filetype] format"
-			a_type="application/unknown"
+		    TraceLog "Attaching $hfcf_a_file in unknown[$hfcf_filetype] format"
+			hfcf_a_type="application/unknown"
 			;;
 		esac
 	    else
-		a_file=`ConvertFile "$filename" "$filetype" "$1"`
-		a_name=`basename $a_file`
+		hfcf_a_file=`ConvertFile "$hfcf_filename" "$hfcf_filetype" "$1"`
+		hfcf_a_name=`basename $hfcf_a_file`
 	    fi
 
 	fi
-	if [ -f "$a_file" ]
+	if [ -f "$hfcf_a_file" ]
 	then
-	    ARGS="$ARGS"" \"$a_file\" \"$a_type\" \"$a_name\" \"$a_desc\""
+	    hfcf_args="$hfcf_args"" \"$hfcf_a_file\" \"$hfcf_a_type\" \"$hfcf_a_name\" \"$hfcf_a_desc\""
 	fi
     done
-    printf '%s' "$ARGS"
+    printf '%s' "$hfcf_args"
 }
 
 ## A Simple function to trace stuff
@@ -583,15 +583,15 @@ ConvertFile ()
 		    ;;
 		PDF|pdf)
 		    TraceLog "pdf2ps necessary"
-		    name="`basename $1 .pdf`"
-		    $PDF2PS $1 $TMPDIR/$name.ps
-		    echo "$TMPDIR/$name.ps"
+		    hfcf_name="`basename $1 .pdf`"
+		    $PDF2PS $1 $TMPDIR/$hfcf_name.ps
+		    echo "$TMPDIR/$hfcf_name.ps"
 		    ;;
 	    	TIFF|tiff|TIF|tif)
 		    TraceLog "tiff2ps necessary"
-		    name="`basename $1 .tif`"
-		    $TIFF2PS -a $1 > $TMPDIR/$name.ps
-		    echo "$TMPDIR/$name.ps"
+		    hfcf_name="`basename $1 .tif`"
+		    $TIFF2PS -a $1 > $TMPDIR/$hfcf_name.ps
+		    echo "$TMPDIR/$hfcf_name.ps"
 		    ;;
 	    esac
 	    ;;
@@ -600,9 +600,9 @@ ConvertFile ()
 	    case $2 in
 	    	PostScript|Postscript|PS|ps)
 		    TraceLog "Using ps2pdf"
-		    name="`basename $1 .ps`"
-		    $PS2PDF $1 $TMPDIR/$name.pdf >/dev/null 2>&1
-		    echo "$TMPDIR/$name.pdf"
+		    hfcf_name="`basename $1 .ps`"
+		    $PS2PDF $1 $TMPDIR/$hfcf_name.pdf >/dev/null 2>&1
+		    echo "$TMPDIR/$hfcf_name.pdf"
 		    ;;
 		PDF|pdf)
 		    TraceLog "Nothing necessary"
@@ -610,9 +610,9 @@ ConvertFile ()
 		    ;;
 		TIFF|tiff|TIF|tif)
 		    TraceLog "Using tiff2pdf"
-		    name="`basename $1 .tif`"
-		    $TIFF2PDF  -o $TMPDIR/$name.pdf $1
-		    echo "$TMPDIR/$name.pdf"
+		    hfcf_name="`basename $1 .tif`"
+		    $TIFF2PDF  -o $TMPDIR/$hfcf_name.pdf $1
+		    echo "$TMPDIR/$hfcf_name.pdf"
 	    esac
 	    ;;
 	TIFF|TIF|tif|tiff)
@@ -620,15 +620,15 @@ ConvertFile ()
 	    case $2 in 
 	    	PostScript|Postscript|PS|ps)
 		    TraceLog "Using ps2fax"
-		    name="`basename $1 .ps`"
-		    $PS2FAX -r $resolution -o $TMPDIR/$name.tif $1
-		    echo "$TMPDIR/$name.tif"
+		    hfcf_name="`basename $1 .ps`"
+		    $PS2FAX -r $resolution -o $TMPDIR/$hfcf_name.tif $1
+		    echo "$TMPDIR/$hfcf_name.tif"
 		    ;;
 	    	PDF|pdf)
 		    TraceLog "Using pdf2fax"
-		    name="`basename $1 .pdf`"
-		    $PDF2FAX -r $resolution -o $TMPDIR/$name.tif $1
-		    echo "$TMPDIR/$name.tif"
+		    hfcf_name="`basename $1 .pdf`"
+		    $PDF2FAX -r $resolution -o $TMPDIR/$hfcf_name.tif $1
+		    echo "$TMPDIR/$hfcf_name.tif"
 		    ;;
 		TIFF|tiff|TIF|tif)
 		    TraceLog "Nothing neccessary"
@@ -648,11 +648,11 @@ LocalSequence ()
     if [ $1 -gt $2 ]; then
 	    return
     fi
-    COUNT=$1
-    while [ $COUNT -le $2 ]
+    hfcf_count=$1
+    while [ $hfcf_count -le $2 ]
     do
-	echo $COUNT
-	COUNT=`expr $COUNT + 1`
+	echo $hfcf_count
+	hfcf_count=`expr $hfcf_count + 1`
     done
 }
 
