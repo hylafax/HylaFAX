@@ -469,6 +469,7 @@ CreateMailMessage ()
 	shift
 	while [ -n "$1" ]
 	do
+	    echo ""
 	    echo "--$MIMEBOUNDARY"
 	    echo "Content-Type: $2; name=\"$3\""
 	    echo "Content-Description: $4"
@@ -478,6 +479,7 @@ CreateMailMessage ()
 	    mimeEncode $1
 	    shift; shift; shift; shift;
 	done
+	echo ""
 	echo "--$MIMEBOUNDARY--"
     fi
 }
