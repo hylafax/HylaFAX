@@ -43,14 +43,6 @@ extern "C" {
 
 #include "NLS.h"
 
-#ifndef TRUE
-#define TRUE 1
-#endif
-
-#ifndef FALSE
-#define FALSE 0
-#endif
-
 TypeRule::TypeRule() {}
 TypeRule::~TypeRule() {}
 TypeRule::TypeRule(const TypeRule& other)
@@ -135,9 +127,9 @@ TypeRule::match(const void* data, size_t size, bool verbose) const
 	    if (!isprint(cp[i]) && !isspace(cp[i]) && cp[i] != '\033') {
 		if (verbose)
 		    printf(NLS::TEXT("failed (unprintable char %#x)\n"), cp[i]);
-		return (FALSE);
+		return (false);
 	    }
-	ok = TRUE;
+	ok = true;
 	goto done;
 	}
     case STRING:
