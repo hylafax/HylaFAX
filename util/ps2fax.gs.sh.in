@@ -174,13 +174,14 @@ if [ -f etc/FaxModify ]; then
     . etc/FaxModify
 fi
 
-$CAT $fil | $PS -q \
+$PS -q \
     -sDEVICE=$device \
     -dNOPAUSE \
     -dSAFER=true \
     -sPAPERSIZE=$paper \
     $FIXEDWIDTH \
     $STRIPSIZE \
+    -dBATCH \
     -r$hres\x$vres \
     "-sOutputFile=$out" \
-    -
+    $fil
