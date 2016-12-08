@@ -221,6 +221,7 @@ private:
     bool	submitJob(const fxStr& jobid, bool checkState = false);
     bool	suspendJob(const fxStr& jobid, bool abortActive);
     void	rejectSubmission(Job&, FaxRequest&, const Status&);
+    void	removeJob(Job& job);
 
     void	startBatch(Modem*, Job&, FaxRequest*, DestInfo&);
     void	fillBatch (Batch&);

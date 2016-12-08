@@ -330,7 +330,7 @@ faxQueueApp::fillBatch(Batch& batch)
 	{
 	    traceJob(job, "Adding to batch");
 	    job.modem = batch.modem;
-	    job.remove();
+	    removeJob(job);
 	    processJob(batch, job, req);
 	    return;				// processJob() is async
 	}
@@ -2234,6 +2234,45 @@ faxQueueApp::rejectSubmission(Job& job, FaxRequest& req, const Status& r)
 }
 
 /*
+ * Remove a job from current QLink and re-sort destination.
+ */
+void
+faxQueueApp::removeJob(Job& job)
+{
+    job.remove();				// remove job from current QLink
+
+    DestInfo& di = destJobs[job.dest];
+
+    if (!di.isOnList() || di.readyQ.isEmpty())
+	return;
+
+    /*
+     * The next job for this destination might not have the same
+     * priority as the previous job, so we must sort the destination
+     * again. Since Jobs are sorted in their readyQ, we know the
+     * destination priority can't increase, so start from current
+     * position in runq.
+     */
+
+    Job& dj(*(Job*)(di.readyQ.next));
+    QLink* ql = di.next;
+    di.remove();
+    while (ql != &runq)
+    {
+	DestInfo* dip = (DestInfo*)ql;
+	if (! dip->readyQ.isEmpty())
+	{
+	    Job& nj(*(Job*)(dip->readyQ.next));
+	    if (! nj.higherPriority(dj))
+		break;
+	}
+	ql = ql->next;
+    }
+    di.insert(*ql);
+    traceQueue(di, "SORT UPDATE DONE");
+}
+
+/*
  * Suspend a job by removing it from whatever
  * queue it's currently on and/or stopping any
  * timers.  If the job has an active subprocess
@@ -2293,7 +2332,7 @@ faxQueueApp::suspendJob(Job& job, bool abortActive)
     case FaxRequest::state_blocked:
 	break;
     }
-    job.remove();				// remove from old queue
+    removeJob(job);				// remove from old queue
     job.stopKillTimer();			// clear kill timer
     return (true);
 }
@@ -2720,7 +2759,7 @@ faxQueueApp::runScheduler()
 		delete req;
 	    } else if (assignModem(job))
 	    {
-		job.remove();			// remove from run queue
+		removeJob(job);			// remove from run queue
 		/*
 		 * We have a modem and have assigned it to the
 		 * job.  The job is not on any list; processJob
