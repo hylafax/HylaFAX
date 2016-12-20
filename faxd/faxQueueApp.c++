@@ -1870,6 +1870,7 @@ faxQueueApp::setReadyToRun(Job& job, FaxRequest& req)
 		Sys::close(pfd[1]);
                 // When fork fails we need to set it ready, because there
                 // will be no child signal to start it.
+		job.remove();			// remove from jcontrolq
                 setReady(job, req);
 		break;
 	    case 0:				// child, exec command
@@ -1902,6 +1903,7 @@ faxQueueApp::setReadyToRun(Job& job, FaxRequest& req)
 	    jobError(job, "JOB CONTROL: pipe failed: %m");
 	    // If our pipe fails, we can't run the child, but we still
 	    // Need setReady to be called to proceed this job
+	    job.remove();			// remove from jcontrolq
 	    setReady(job, req);
 	}
     } else
