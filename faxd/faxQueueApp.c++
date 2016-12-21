@@ -1867,6 +1867,7 @@ faxQueueApp::setReadyToRun(Job& job, FaxRequest& req)
 	    switch (pid) {
 	    case -1:			// error - continue with no JCI
 		jobError(job, "JOB CONTROL: fork: %m");
+		Sys::close(pfd[0]);
 		Sys::close(pfd[1]);
                 // When fork fails we need to set it ready, because there
                 // will be no child signal to start it.
