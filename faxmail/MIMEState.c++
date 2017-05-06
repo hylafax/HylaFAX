@@ -400,11 +400,6 @@ MIMEState::getQuotedPrintableLine(FILE* fd, fxStackBuffer& buf)
 	c &= 0xff;
 	if (c == '\n') {			// check for boundary marker
 	    lineno++;
-	    if (cc > 0 && line[cc-1] == '=') {	// soft line break
-		copyQP (buf, line, cc-1);       // everything up to ``="''
-		cc = 0;
-		continue;
-	    }
 	    if (cc >= blen && line[0] == '-') {
 		if (cc == blen && strneq(line, boundary, blen))
 		    return (false);
@@ -412,6 +407,11 @@ MIMEState::getQuotedPrintableLine(FILE* fd, fxStackBuffer& buf)
 		    lastPart = true;
 		    return (false);
 		}
+	    }
+	    if (cc > 0 && line[cc-1] == '=') {	// soft line break
+		copyQP (buf, line, cc-1);       // everything up to ``="''
+		cc = 0;
+		continue;
 	    }
 	    copyQP(buf, line, cc);
 	    buf.put('\n');
