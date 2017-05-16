@@ -2187,7 +2187,7 @@ and
 .B ModemMinSpeed
 The minimum acceptable signalling rate for transmitting facsimile
 page data.
-Possible values are: 2400, 4800, 7200, 9600, 12200, and 14400.
+Possible values are: 2400, 4800, 7200, 9600, 12000, and 14400.
 .TP
 .B ModemMfrQueryCmd
 The command to send to the modem to get the manufacturer
