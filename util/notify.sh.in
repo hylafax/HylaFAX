@@ -6,8 +6,6 @@
 #
 # This is a rewrite of the notify.sh.
 # This version uses the "template" capabilityes to send the e-mails.
-# FaxQueuer only calls notify if the job requested notification,
-# So if we are called, we *will* send an email (barring any errors)
 #
 # etc/FaxNotify controls *what* we e-mail
 # - TEMPLATE=subdir
