@@ -12,7 +12,7 @@
 # - RETURNFILETYPE=raw|PDF|PS|TIFF
 #
 # It send the e-mail to $mailaddr, which is the mailaddr of the job.
-# The e-mail template used is selectec from:
+# The e-mail template used is selected from:
 #   - etc/templates/$TEMPLATE/notify-$WHY-page.txt (only for pager jobs)
 #   - etc/templates/$TEMPLATE/notify-$WHY.txt
 # If it is a pager job, and notify-$WHY-page.txt does *not* exist, it

@@ -86,7 +86,7 @@ u_long Sequence::getNext(const char* name, fxStr& emsg)
     if (Sys::write(fd, (const char*)line2, len) != len ||
             ftruncate(fd, len)) {
         emsg = fxStr::format(
-            NLS::TEXT("Unable update sequence number file %s; write failed."), name);
+            NLS::TEXT("Unable to update sequence number file %s; write failed."), name);
         logError("%s: Problem updating sequence number file", name);
         return ((u_long) -1);
     }
