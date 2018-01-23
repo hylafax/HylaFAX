@@ -297,6 +297,11 @@
 @HAVE_JBIGTIFF@
 
 /*
+ * PODOFO library support for PDF cover pages
+ */
+@HAVE_PODOFO@
+
+/*
  * i18n support
  */
 @ENABLE_NLS@

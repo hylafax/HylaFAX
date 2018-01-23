@@ -2,6 +2,8 @@
 /*
  * Copyright (c) 1990-1996 Sam Leffler
  * Copyright (c) 1991-1996 Silicon Graphics, Inc.
+ * Copyright (c) 2018 Patrice Fournier
+ * Copyright (c) 2018 iFAX Solutions, Inc.
  * HylaFAX is a trademark of Silicon Graphics
  *
  * Permission to use, copy, modify, distribute, and sell this software and 
@@ -31,10 +33,14 @@
 
 #include "NLS.h"
 
+#include <iostream>
 #include <stdarg.h>
 #include <ctype.h>
 #include <pwd.h>
 #include <sys/file.h>
+#ifdef HAVE_PODOFO
+#include <podofo/podofo.h>
+#endif
 
 class faxCoverApp {
 private:
@@ -57,6 +63,7 @@ private:
     fxStr	sender;		// sender's identity
     fxStr	pageCount;	// # pages, not counting cover page
     fxStr	dateFmt;	// strftime format string
+    fxStr	date;		// formatted date string
     float	pageWidth;	// page width (mm)
     float	pageLength;	// page length (mm)
     int		maxcomments;	// max # of comment lines
@@ -66,11 +73,17 @@ private:
 
     fxStr tildeExpand(const fxStr& filename);
     void setupPageSize(const char* name);
+    void prepareTo(const char* to, FaxDBRecord* rec);
+    void prepareFrom(FaxDBRecord* rec);
+    void prepareComment();
+    void prepareDate();
     void emitToDefs(const char* to, FaxDBRecord* rec);
     void emitFromDefs(FaxDBRecord* rec);
     void emitCommentDefs();
     void emitDateDefs();
     void coverDef(const char* tag, const char* value);
+    void makePSCoverSheet(int fd);
+    void makePDFCoverSheet(const char* templateFilename);
     void makeCoverSheet();
     void usage();
     void printError(const char* va_alist ...);
@@ -315,18 +328,10 @@ const char* faxCoverApp::prologue = "\
 ";
 
 void
-faxCoverApp::makeCoverSheet()
+faxCoverApp::makePSCoverSheet(int fd)
 {
-    int fd;
-    if (cover.length() > 0 && cover[0] != '/') {
-	fd = Sys::open(tildeExpand("~/" | cover), O_RDONLY);
-	if (fd < 0)
-	    fd = Sys::open(fxStr(FAX_LIBDATA) | "/" | cover, O_RDONLY);
-    } else
-	fd = Sys::open(cover, O_RDONLY);
     if (fd < 0) {
-	printError(_("Could not locate prototype cover sheet \"%s\""),
-	    (const char*) cover);
+	printError(_("Missing cover sheet template"));
 	return;
     }
     printf("%%!PS-Adobe-2.0 EPSF-2.0\n");
@@ -361,15 +366,106 @@ faxCoverApp::makeCoverSheet()
     int n;
     while ((n = read(fd, buf, sizeof (buf))) > 0) 
 	fwrite(buf, n, 1, stdout);
-    Sys::close(fd);
     printf("\nend\n");
 }
 
 void
-faxCoverApp::emitToDefs(const char* to, FaxDBRecord* rec)
+faxCoverApp::makePDFCoverSheet(const char* templateFilename)
+{
+#ifdef HAVE_PODOFO
+    PoDoFo::PdfMemDocument pdfTemplate(templateFilename);
+
+//    PoDoFo::PdfInfo* info = pdfTemplate.GetInfo();
+//    info->SetProducer('faxcover');
+//    info->SetTitle('HylaFAX Cover Sheet');
+//    pdfTemplate.SetInfo(info);
+
+    prepareTo(toName, toName != "" ? db->find(toName) : (FaxDBRecord*) NULL);
+    prepareFrom(db->find(sender));
+    prepareComment();
+    prepareDate();
+
+    for (int p=0; p < pdfTemplate.GetPageCount(); p++) {
+	PoDoFo::PdfPage* page = pdfTemplate.GetPage(p);
+	for (int f=0; f < page->GetNumFields(); f++) {
+	    PoDoFo::PdfTextField field = (PoDoFo::PdfTextField)page->GetField(f);
+	    if (field.GetType() != PoDoFo::ePdfField_TextField)
+		continue;
+	    if (field.GetFieldName() == "to")
+		field.SetText((const char *)toName);
+	    else if (field.GetFieldName() == "to-company")
+		field.SetText((const char *)toCompany);
+	    else if (field.GetFieldName() == "to-location")
+		field.SetText((const char *)toLocation);
+	    else if (field.GetFieldName() == "to-voice-number")
+		field.SetText((const char *)toVoiceNumber);
+	    else if (field.GetFieldName() == "to-fax-number")
+		field.SetText((const char *)toFaxNumber);
+	    else if (field.GetFieldName() == "from")
+		field.SetText((const char *)sender);
+	    else if (field.GetFieldName() == "from-fax-number")
+		field.SetText((const char *)fromFaxNumber);
+	    else if (field.GetFieldName() == "from-voice-number")
+		field.SetText((const char *)fromVoiceNumber);
+	    else if (field.GetFieldName() == "from-company")
+		field.SetText((const char *)fromCompany);
+	    else if (field.GetFieldName() == "from-location")
+		field.SetText((const char *)fromLocation);
+	    else if (field.GetFieldName() == "from-mail-address")
+		field.SetText((const char *)fromMailAddr);
+	    else if (field.GetFieldName() == "page-count")
+		field.SetText((const char *)pageCount);
+	    else if (field.GetFieldName() == "todays-date")
+		field.SetText((const char *)date);
+	    else if (field.GetFieldName() == "regarding")
+		field.SetText((const char *)regarding);
+	    else if (field.GetFieldName() == "comments")
+		field.SetText((const char *)comments);
+	}
+    }
+    PoDoFo::PdfOutputDevice outStream(&std::cout);
+    pdfTemplate.Write(&outStream);
+#else
+    printError(_("PDF Cover Page support not available"));
+    return;
+#endif
+}
+
+void
+faxCoverApp::makeCoverSheet()
+{
+    int fd;
+    fxStr templateFilename;
+    if (cover.length() > 0 && cover[0] != '/') {
+	templateFilename = tildeExpand("~/" | cover);
+	fd = Sys::open(templateFilename, O_RDONLY);
+	if (fd < 0) {
+	    templateFilename = fxStr(FAX_LIBDATA) | "/" | cover;
+	    fd = Sys::open(fxStr(templateFilename), O_RDONLY);
+	}
+    } else {
+	templateFilename = cover;
+	fd = Sys::open(templateFilename, O_RDONLY);
+    }
+    if (fd < 0) {
+	printError(_("Could not locate prototype cover sheet \"%s\""),
+	    (const char*) cover);
+	return;
+    }
+    if (templateFilename.tail(4) == ".pdf") {
+	Sys::close(fd);
+	makePDFCoverSheet(templateFilename);
+    } else {
+	makePSCoverSheet(fd);
+	Sys::close(fd);
+    }
+}
+
+void
+faxCoverApp::prepareTo(const char* to, FaxDBRecord* rec)
 {
     if (rec) {
-	to = rec->find(FaxDB::nameKey);
+	toName = rec->find(FaxDB::nameKey);
 	if (toCompany == "")
 	    toCompany = rec->find("Company");
 	if (toLocation == "")
@@ -383,15 +479,10 @@ faxCoverApp::emitToDefs(const char* to, FaxDBRecord* rec)
 	    }
 	}
     }
-    coverDef("to",		to);
-    coverDef("to-company",	toCompany);
-    coverDef("to-location",	toLocation);
-    coverDef("to-voice-number",	toVoiceNumber);
-    coverDef("to-fax-number",	toFaxNumber);
 }
 
 void
-faxCoverApp::emitFromDefs(FaxDBRecord* rec)
+faxCoverApp::prepareFrom(FaxDBRecord* rec)
 {
     if (rec) {
 	fromCompany = rec->find("Company");
@@ -407,6 +498,46 @@ faxCoverApp::emitFromDefs(FaxDBRecord* rec)
 		fromVoiceNumber.insert("1-" | areaCode | "-");
 	}
     }
+}
+
+void
+faxCoverApp::prepareComment()
+{
+    /*
+     * Fix up new line characters.
+     */
+    u_int crlf = comments.find(0, "\\n", (u_int) 0);
+    while ( crlf < comments.length()) {
+        comments.remove(crlf, 2);
+        comments.insert('\n', crlf);
+        crlf = comments.find(0, "\\n", (u_int) 0);
+    }
+}
+
+void
+faxCoverApp::prepareDate()
+{
+    time_t t = time(0);
+    char buf[128];
+    strftime(buf, sizeof (buf), dateFmt, localtime(&t));
+    date = buf;
+}
+
+void
+faxCoverApp::emitToDefs(const char* to, FaxDBRecord* rec)
+{
+    prepareTo(to, rec);
+    coverDef("to",		toName);
+    coverDef("to-company",	toCompany);
+    coverDef("to-location",	toLocation);
+    coverDef("to-voice-number",	toVoiceNumber);
+    coverDef("to-fax-number",	toFaxNumber);
+}
+
+void
+faxCoverApp::emitFromDefs(FaxDBRecord* rec)
+{
+    prepareFrom(rec);
     coverDef("from",		sender);
     coverDef("from-fax-number",	fromFaxNumber);
     coverDef("from-voice-number",fromVoiceNumber);
@@ -418,24 +549,14 @@ faxCoverApp::emitFromDefs(FaxDBRecord* rec)
 void
 faxCoverApp::emitCommentDefs()
 {
-    /*
-     * Fix up new line characters.
-     */
-    u_int crlf = comments.find(0, "\\n", (u_int) 0);
-    while ( crlf < comments.length()) {
-        comments.remove(crlf, 2);
-        comments.insert('\n', crlf);
-        crlf = comments.find(0, "\\n", (u_int) 0);
-    }
+    prepareComment();
     coverDef("comments", comments);
 }
 
 void
 faxCoverApp::emitDateDefs()
 {
-    time_t t = time(0);
-    char date[128];
-    strftime(date, sizeof (date), dateFmt, localtime(&t));
+    prepareDate();
     coverDef("todays-date", date);
 }
 

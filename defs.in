@@ -140,7 +140,7 @@ C++FILE		= @CXXFILE@
 
 # default definitions for programs--overide them as desired
 LIBS		= ${UTIL}/libhylafax-${ABI_VERSION}.${DSO}
-LLDLIBS		= -L${UTIL} -lhylafax-${ABI_VERSION} @LIBJBIG@ ${LIBTIFF} ${LIBINTL} ${LIBZ} ${LIBREGEX} ${LIBPORT} ${MACHDEPLIBS}
+LLDLIBS		= -L${UTIL} -lhylafax-${ABI_VERSION} @LIBJBIG@ ${LIBTIFF} ${LIBINTL} ${LIBZ} ${LIBREGEX} ${LIBPORT} ${MACHDEPLIBS} @LIBPODOFO@
 #
 # Override this definition to eliminate shared library use.
 #

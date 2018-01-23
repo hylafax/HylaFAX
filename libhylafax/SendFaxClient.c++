@@ -241,10 +241,17 @@ SendFaxClient::makeCoverPage(const SendFaxJob& job, fxStr& file, fxStr& emsg)
 		Sys::close(pfd[1]);
 		break;
 	    case 0:			// child, exec command
+		{ int nfd = Sys::open(_PATH_DEVNULL, O_RDWR);
+		  if (nfd == -1)
+		      printf("Could not open null device file %s.", _PATH_DEVNULL);
+		  dup2(nfd, STDIN_FILENO);
+		  dup2(nfd, STDERR_FILENO);
+		  for (nfd = Sys::getOpenMax()-1; fd >= 0; fd--)
+		      if (nfd != STDIN_FILENO && nfd != STDOUT_FILENO && nfd != STDERR_FILENO)
+			  (void) Sys::close(nfd);
+		}
 		if (pfd[1] != STDOUT_FILENO)
 		    dup2(pfd[1], STDOUT_FILENO);
-		// XXX should close other descriptors
-		dup2(STDOUT_FILENO, STDERR_FILENO);
 		Sys::execv(coverCmd, (char* const*) av);
 		_exit(-1);
 		/*NOTREACHED*/

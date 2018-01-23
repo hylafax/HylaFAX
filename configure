@@ -161,6 +161,7 @@ GETTY
 GREP
 GS
 GSRIP 		PATH_GSRIP
+HAVE_PODOFO
 HFAXD_SERVER
 HFAXD_SNPP_SERVER
 IMP
@@ -172,6 +173,7 @@ LIBDIR		DIR_LIB
 LIBEXEC		DIR_LIBEXEC
 LIBCRYPT
 LIBINTL
+LIBPODOFO
 LIBPORT
 LIBREGEX
 LIBTIFF
@@ -1728,6 +1730,23 @@ EOF
 		Note "... not found. Disabling NLS support"
 else
 	Note "Disabling NLS (gettext) support"
+fi
+
+HAVE_PODOFO="/*#define HAVE_PODOFO 1*/"
+LIBPODOFO=""
+if [ "$DISABLE_PODOFO" != "yes" ]; then
+	Note "Checking for PODOFO library support"
+	CheckForIncludeFile podofo/podofo.h && {
+		HAVE_PODOFO="#define HAVE_PODOFO 1"
+		LIBPODOFO="-lpodofo"
+	}
+	if [ "x$LIBPODOFO" = "x" ]; then
+		Note "... not found. Disabling PODOFO support"
+	else
+		Note "... found. Enabling PODOFO support"
+	fi
+else
+	Note "Disabling PODOFO support"
 fi
 
 CheckForLibrary crypt -lc || {
