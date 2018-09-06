@@ -180,7 +180,7 @@ case "$NOTIFY_FAXMASTER:$WHY" in
     "always:"*)                     do_faxmaster;;
     "yes:"*)                        do_faxmaster;;
 
-    "errors:success")               ;;              # Not errors
+    "errors:done")                  ;;              # Not errors
     "errors:blocked")               ;;              # Not errors
     "errors:"*)                     do_faxmaster;;  # errors
 
