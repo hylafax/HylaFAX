@@ -59,11 +59,13 @@ URL:       http://www.ifax.com/
 
 Source:    ftp://ftp.hylafax.org/source/%{name}-%{version}.tar.gz
 
-BuildPrereq: libjpeg-devel, libtiff-devel, zlib-devel, gettext
+BuildRequires: make, gcc, gcc-c++, tar
+BuildRequires: pam-devel, libjpeg-devel, libtiff-devel, zlib-devel, gettext-devel
+BuildRequires: ghostscript
 %if %{is_suse}
-BuildPrereq: gettext-tools
+BuildRequires: gettext-tools
 %endif
-BuildPrereq: rpm >= 3.0.5
+BuildRequires: rpm >= 3.0.5
 
 BuildRoot: %{_tmppath}/%{name}-root
 
