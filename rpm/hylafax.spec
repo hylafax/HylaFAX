@@ -19,15 +19,12 @@
 %define rh_version 0
 %endif
 
-%if %{rh_version} > 0 && %{rh_version} < 7
-%define ostag rhel%{rh_version}
-%endif
-%if %{rh_version} >= 7
-%define ostag rh%{rh_version}
+%if %{rh_version} > 0
+%define ostag .el%{rh_version}
 %endif
 
 %if %{is_fc}
-%define ostag fc%(rpm -q --queryformat='%{VERSION}' fedora-release)
+%define ostag .fc%(rpm -q --queryformat='%{VERSION}' fedora-release)
 %endif
 
 
@@ -40,10 +37,10 @@
 %endif
 
 %if %{suse_version} > 0
-%define ostag suse%(echo %{suse_version} | sed - -e 's/\\([0-9]*\\)[0-9].*/\\1/')
+%define ostag .suse%(echo %{suse_version} | sed - -e 's/\\([0-9]*\\)[0-9].*/\\1/')
 %endif
 %if %{sles_version} > 0
-%define ostag sles%{sles_version}
+%define ostag .sles%{sles_version}
 %endif
 
 %define faxspool    %{_var}/spool/hylafax
