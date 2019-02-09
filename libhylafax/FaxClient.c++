@@ -865,10 +865,10 @@ FaxClient::jobParm(const char* name, const fxStr& value)
      * We need to quote any " marks in the string before
      * we pass it on to the raw jobParm(... const char*)
      */
-    if (value.next(0,'"'))
+    if (value.next(0,'"') != value.length())
     {
 	fxStr tmp(value);
-	int r = tmp.length();
+	int r = tmp.length()+1;
 	while (r > 0)
 	{
 	    if ( (r = tmp.nextR(r-1, '"') ) > 0 )
