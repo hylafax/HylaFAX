@@ -79,6 +79,7 @@ public:
 
     static const fxStr quote;
     static const fxStr enquote;
+    fxStr  quoted(const fxStr& s);
 
     static bool runCmd(const char* cmd, bool changeIDs = false, IOHandler* waiter = NULL);
 };

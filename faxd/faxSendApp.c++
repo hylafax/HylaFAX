@@ -359,11 +359,11 @@ faxSendApp::notifyPollRecvd(FaxRequest& req, FaxRecvInfo& ri)
 
     // hand to delivery/notification command
     fxStr cmd(pollRcvdCmd
-	 | quote |       req.mailaddr | enquote
-	 | quote |           ri.qfile | enquote
-	 | quote | getModemDeviceID() | enquote
-	 | quote |          ai.commid | enquote
-	 | quote |          ri.reason | enquote
+	 | quote |       quoted(req.mailaddr) | enquote
+	 | quote |           quoted(ri.qfile) | enquote
+	 | quote | quoted(getModemDeviceID()) | enquote
+	 | quote |          quoted(ai.commid) | enquote
+	 | quote |          quoted(ri.reason) | enquote
      );
     traceServer("RECV POLL: %s", (const char*) cmd);
     setProcessPriority(BASE);			// lower priority

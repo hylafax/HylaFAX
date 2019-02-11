@@ -337,13 +337,13 @@ faxGettyApp::answerPhone(AnswerType atype, CallType ctype, const CallID& callid,
     rejectCall = false;
 
     for (u_int i = 0; i < callid.size(); i++)
-	callid_formatted.append(quote | callid.id(i) | enquote);
+	callid_formatted.append(quote | quoted(callid.id(i)) | enquote);
 
     if (callid_formatted.length())
     	traceProtocol("CallID:%s", (const char*) callid_formatted);
 
     if (dynamicConfig.length()) {
-	fxStr cmd(dynamicConfig | quote | getModemDevice() | enquote | callid_formatted);
+	fxStr cmd(dynamicConfig | quote | quoted(getModemDevice()) | enquote | callid_formatted);
 	traceServer("DynamicConfig: %s", (const char*)cmd);
 	fxStr localid = "";
 	int pipefd[2], status;
@@ -846,14 +846,14 @@ faxGettyApp::notifyRecvDone(FaxRecvInfo& ri)
 
     fxStr callid_formatted;
     for (u_int i = 0; i < ri.callid.size(); i++) {
-	callid_formatted.append(quote | ri.callid.id(i) | enquote);
+	callid_formatted.append(quote | quoted(ri.callid.id(i)) | enquote);
     }
     // hand to delivery/notification command
     fxStr cmd(faxRcvdCmd
-	| quote |             ri.qfile	| enquote
-	| quote |   getModemDeviceID()	| enquote
-	| quote |            ri.commid	| enquote
-	| quote |            ri.reason	| enquote
+	| quote |             quoted(ri.qfile)	| enquote
+	| quote |   quoted(getModemDeviceID())	| enquote
+	| quote |            quoted(ri.commid)	| enquote
+	| quote |            quoted(ri.reason)	| enquote
 	| callid_formatted);
     traceServer("RECV FAX: %s", (const char*) cmd);
     setProcessPriority(BASE);			// lower priority

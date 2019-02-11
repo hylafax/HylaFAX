@@ -388,8 +388,19 @@ detachIO(void)
 	    (void) Sys::close(fd);
 }
 
-const fxStr faxApp::quote	= " \"";
-const fxStr faxApp::enquote	= "\"";
+const fxStr faxApp::quote	= " \'";
+const fxStr faxApp::enquote	= "\'";
+
+fxStr
+faxApp::quoted(const fxStr& s)
+{
+    fxStr q;
+    for (u_int i = 0; i < s.length(); i++) {
+	if (s[i] == '\'') q.append("\'\\\'");
+	q.append(s[i]);
+    }
+    return (q);
+}
 
 /*
  * Run the specified shell command.  If changeIDs is

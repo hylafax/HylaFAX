@@ -249,7 +249,7 @@ faxQCleanApp::archiveJob(const FaxRequest& req)
 {
     // hand the archiving task off to the archiving command
     fxStr cmd("bin/archive"
-	| quote |             req.jobid	| enquote
+	| quote |             quoted(req.jobid)	| enquote
     );
     runCmd(cmd, true);
 }

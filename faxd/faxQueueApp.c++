@@ -3186,8 +3186,8 @@ faxQueueApp::notifyModemWedged(Modem& modem)
     fxStr dev(idToDev(modem.getDeviceID()));
     logError("MODEM %s appears to be wedged", (const char*)dev);
     fxStr cmd(wedgedCmd
-	| quote |  modem.getDeviceID() | enquote
-	| quote |                  dev | enquote
+	| quote | quoted(modem.getDeviceID()) | enquote
+	| quote |                 quoted(dev) | enquote
     );
     traceServer("MODEM WEDGED: %s", (const char*) cmd);
     runCmd(cmd, true, this);
@@ -3693,9 +3693,9 @@ void
 faxQueueApp::notifySender(Job& job, JobStatus why, const char* duration)
 {
     fxStr cmd(notifyCmd
-	| quote |		 job.file | enquote
-	| quote | Job::jobStatusName(why) | enquote
-	| quote |		 duration | enquote
+	| quote |		 quoted(job.file) | enquote
+	| quote | quoted(Job::jobStatusName(why)) | enquote
+	| quote |		 quoted(duration) | enquote
     );
     if (why == Job::requeued) {
 	/*
