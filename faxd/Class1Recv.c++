@@ -240,7 +240,7 @@ Class1Modem::recvIdentification(
 			    eresult.clear();
 			    return (true);
 			} else {
-			    if (lastResponse == AT_FRH3 && waitFor(AT_CONNECT,0)) {
+			    if (lastResponse == AT_FRH3 && waitFor(AT_CONNECT, conf.t2Timer)) {
 				// It's unclear if we are in "COMMAND REC" or "RESPONSE REC" mode,
 				// but since we are already detecting the carrier, wait the longer.
 				gotframe = recvFrame(frame, FCF_RCVR, conf.t2Timer, true, true, false);
@@ -638,7 +638,7 @@ Class1Modem::recvPage(TIFF* tif, u_int& ppm, Status& eresult, const fxStr& id)
 		    }
 		    bool getframe = false;
 		    long wait = BIT(curcap->br) & BR_ALL ? 273066 / (curcap->br+1) : conf.t2Timer;
-		    if (rmResponse == AT_FRH3) getframe = waitFor(AT_CONNECT, 0);
+		    if (rmResponse == AT_FRH3) getframe = waitFor(AT_CONNECT, wait);
 		    else if (rmResponse != AT_NOCARRIER && rmResponse != AT_ERROR) getframe = atCmd(rhCmd, AT_CONNECT, wait);	// wait longer
 		    if (getframe) {
 			HDLCFrame frame(conf.class1FrameOverhead);
@@ -761,7 +761,7 @@ Class1Modem::recvPage(TIFF* tif, u_int& ppm, Status& eresult, const fxStr& id)
 			    messageReceived = (!trainok && lastResponse == AT_FRH3);
 			}
 		    } while (!trainok && traincount++ < 3 && lastResponse != AT_FRH3 && recvFrame(frame, FCF_RCVR, timer));
-		    if (messageReceived && lastResponse == AT_FRH3 && waitFor(AT_CONNECT,0)) {
+		    if (messageReceived && lastResponse == AT_FRH3 && waitFor(AT_CONNECT, conf.t2Timer)) {
 			messageReceived = false;
 			if (recvFrame(frame, FCF_RCVR, conf.t2Timer, true)) {
 			    messageReceived = true;
@@ -1068,7 +1068,7 @@ Class1Modem::raiseRecvCarrier(bool& dolongtrain, Status& eresult)
 	lastResponse = atResponse(rbuf, conf.class1RMPersistence ? conf.t2Timer + 2900 : conf.t2Timer - 2900);
     } while ((lastResponse == AT_NOTHING || lastResponse == AT_FCERROR) && ++attempts < conf.class1RMPersistence);
     if (lastResponse == AT_ERROR) gotEOT = true;	// on hook
-    if (lastResponse == AT_FRH3 && waitFor(AT_CONNECT,0)) {
+    if (lastResponse == AT_FRH3 && waitFor(AT_CONNECT, conf.t2Timer)) {
 	gotRTNC = true;
 	gotEOT = false;
     }
