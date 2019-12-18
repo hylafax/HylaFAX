@@ -33,7 +33,7 @@
 class NLS
 {
     public:
-	static const char* TEXT (const char*);
+	static const char* TEXT (const char*) __attribute__ ((format_arg (1)));
 
 	static void Setup (const char* domain, const char* local_dir = NULL);
 
