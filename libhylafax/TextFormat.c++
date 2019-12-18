@@ -1253,7 +1253,7 @@ TextFont::decodeFontName(const char* name, fxStr& filename, fxStr& emsg)
     fxStr key = name;
     int aliascount = maxaliases;
 
-    if (!TextFont::fontMapsLoaded);
+    if (!TextFont::fontMapsLoaded)
 	loadFontMaps();
     while (((const char*)fontMapDict[key])[0] == '/' && aliascount-- > 0) {
 	// Alias
