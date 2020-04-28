@@ -1280,17 +1280,23 @@ if onClient; then
 			cd $d
 			for f in Fontmap Fontmap.GS Fontmap.HylaFAX; do
 			    if [ -f $f ]; then
-				OUTPUT=`$SED -n -e 's/^\/'$ALIAS'[ 	]*\((\([^)]*\))\|\/\([^ 	;]*\)\).*/\2\3/p' $f`
+				OUTPUT=`$SED -n -e 's/^\/'$LAST_ALIAS'[ 	]*\((\([^)]*\))\).*/\2\3/p' $f`
+				if [ -n "$OUTPUT" ]; then
+				    # Allow later files to overwrite previous definitions
+				    ALIASFILE=$OUTPUT
+				fi
+				OUTPUT=`$SED -n -e 's/^\/'$LAST_ALIAS'[ 	]*\(\/\([^ 	;]*\)\).*/\2\3/p' $f`
 				if [ -n "$OUTPUT" ]; then
 				    # Allow later files to overwrite previous definitions
 				    ALIAS=$OUTPUT
+				    ALIASFILE=
 				fi
 			    fi
 			done
 		    fi
 		done
 	    done
-	    FONTFILE=`echo $ALIAS | sed -e 's/\.[^./]*$//'`
+	    FONTFILE=`echo $ALIASFILE | sed -e 's/\.[^./]*$//'`
 	    for d in `echo $FONT_PATH | $SED 's/:/ /g'`; do
 		if [ -f "$d/$FONTFILE.afm" ] || [ -f "$d/$FONTFILE" ]; then
 		    echo $FONTNAME
