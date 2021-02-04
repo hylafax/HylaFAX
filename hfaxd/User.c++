@@ -502,11 +502,21 @@ HylaFAXServer::deleteUser(FILE* db, const char* user)
 		break;
 	    }
 	}
-	fputs(line, ftmp);
+	if (fputs(line, ftmp) == EOF) {
+	    perror_reply(550, "Write error", errno);
+	    fclose(ftmp);
+	    (void) Sys::unlink(tfile);
+	    return (false);
+	}
     }
     int cc;
     while ((cc = fread(line, 1, sizeof (line), db)) > 0)
-	fwrite(line, cc, 1, ftmp);
+	if (fwrite(line, cc, 1, ftmp) != 1) {
+	    perror_reply(550, "Write error", errno);
+	    fclose(ftmp);
+	    (void) Sys::unlink(tfile);
+	    return (false);
+	}
     bool ioError = (fclose(ftmp) != 0);
     if (found) {
 	if (ioError)
