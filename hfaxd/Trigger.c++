@@ -214,7 +214,7 @@ HylaFAXServer::triggerEvent(const TriggerMsgHeader& h, const char* cp)
 	 * appropriate.  We support it now to better
 	 * understand the implications.
 	 */
-	(void) Sys::write(data, cp - sizeof (h), h.length);
+	(void) Sys::write(pdata > 0 ? pdata : data, cp - sizeof (h), h.length);
     }
 #undef EventType
 }
@@ -235,7 +235,7 @@ HylaFAXServer::logEventMsg(const TriggerMsgHeader& h, fxStr& msg)
 	, 100+h.event
     ));
     msg.append("\r\n");
-    (void) Sys::write(data, msg, msg.length());
+    (void) Sys::write(pdata > 0 ? pdata : data, msg, msg.length());
 }
 
 /*
