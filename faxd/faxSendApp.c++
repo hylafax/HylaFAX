@@ -366,8 +366,18 @@ faxSendApp::notifyPollRecvd(FaxRequest& req, FaxRecvInfo& ri)
 	 | quote |          quoted(ri.reason) | enquote
      );
     traceServer("RECV POLL: %s", (const char*) cmd);
+
+    const char* argv[7];
+    argv[0] = (const char*) pollRcvdCmd;
+    argv[1] = (const char*) req.mailaddr;
+    argv[2] = (const char*) ri.qfile;
+    argv[3] = (const char*) getModemDeviceID();
+    argv[4] = (const char*) ai.commid;
+    argv[5] = (const char*) ri.reason;
+    argv[6] = NULL;
+
     setProcessPriority(BASE);			// lower priority
-    runCmd(cmd, true, this);
+    runCmd(pollRcvdCmd, argv, true, this);
     setProcessPriority(state);			// restore previous priority
 }
 

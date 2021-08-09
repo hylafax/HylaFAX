@@ -248,10 +248,12 @@ void
 faxQCleanApp::archiveJob(const FaxRequest& req)
 {
     // hand the archiving task off to the archiving command
-    fxStr cmd("bin/archive"
-	| quote |             quoted(req.jobid)	| enquote
-    );
-    runCmd(cmd, true);
+    const char* cmd = "bin/archive";
+    const char* argv[3];
+    argv[0] = (const char*) cmd;
+    argv[1] = (const char*) req.jobid;
+    argv[2] = NULL;
+    runCmd(cmd, argv, true);
 }
 
 /*

@@ -81,7 +81,7 @@ public:
     static const fxStr enquote;
     fxStr  quoted(const fxStr& s);
 
-    static bool runCmd(const char* cmd, bool changeIDs = false, IOHandler* waiter = NULL);
+    static bool runCmd(const char* cmd, const char* argv[], bool changeIDs = false, IOHandler* waiter = NULL);
 };
 inline bool faxApp::isRunning(void) const	{ return running; }
 

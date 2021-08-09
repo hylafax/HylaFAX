@@ -1382,7 +1382,14 @@ faxQueueApp::makeCoverPage(Job& job, FaxRequest& req, const Class2Params& params
 	| " " | fitem.item
     );
     traceQueue(job, "COVER PAGE: %s", (const char*)cmd);
-    if (runCmd(cmd, true)) {
+
+    const char* argv[5];
+    argv[0] = (const char*) coverCmd;
+    argv[1] = (const char*) req.qfile;
+    argv[2] = (const char*) contCoverPageTemplate;
+    argv[3] = (const char*) fitem.item;
+    argv[4] = NULL;
+    if (runCmd(coverCmd, argv, true)) {
 	Status result;
 	fxStr tmp = fitem.item | ";" | params.encodePage();
 	if (convertDocument(job, fitem, tmp, params, result)) {
@@ -3190,7 +3197,13 @@ faxQueueApp::notifyModemWedged(Modem& modem)
 	| quote |                 quoted(dev) | enquote
     );
     traceServer("MODEM WEDGED: %s", (const char*) cmd);
-    runCmd(cmd, true, this);
+
+    const char* argv[4];
+    argv[0] = (const char*) wedgedCmd;
+    argv[1] = (const char*) modem.getDeviceID();
+    argv[2] = (const char*) dev;
+    argv[3] = NULL;
+    runCmd(wedgedCmd, argv, true, this);
 }
 
 void
@@ -3697,18 +3710,29 @@ faxQueueApp::notifySender(Job& job, JobStatus why, const char* duration)
 	| quote | quoted(Job::jobStatusName(why)) | enquote
 	| quote |		 quoted(duration) | enquote
     );
+    fxStr jobwhy(Job::jobStatusName(why));
+    char buf[30];
+    const char* argv[6];
+    argv[0] = (const char*) notifyCmd;
+    argv[1] = (const char*) job.file;
+    argv[2] = (const char*) jobwhy;
+    argv[3] = duration;
+    argv[4] = NULL;
+    argv[5] = NULL;
+
     if (why == Job::requeued) {
 	/*
 	 * It's too hard to do localtime in an awk script,
 	 * so if we may need it, we calculate it here
 	 * and pass the result as an optional argument.
 	 */
-	char buf[30];
-	strftime(buf, sizeof (buf), " \"%H:%M\"", localtime(&job.tts));
-	cmd.append(buf);
+	strftime(buf, sizeof (buf), "%H:%M", localtime(&job.tts));
+	cmd.append(quote | quoted(buf) | enquote);
+	argv[4] = buf;
     }
     traceServer("NOTIFY: %s", (const char*) cmd);
-    runCmd(cmd, true, this);
+
+    runCmd(notifyCmd, argv, true, this);
 }
 
 void

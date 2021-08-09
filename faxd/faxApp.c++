@@ -403,13 +403,13 @@ faxApp::quoted(const fxStr& s)
 }
 
 /*
- * Run the specified shell command.  If changeIDs is
+ * Run the specified command.  If changeIDs is
  * true, we set the real uid+gid to the effective; this
  * is so that programs like sendmail show an informative
  * from address.
  */
 bool
-faxApp::runCmd(const char* cmd, bool changeIDs, IOHandler* waiter)
+faxApp::runCmd(const char* cmd, const char* argv[], bool changeIDs, IOHandler* waiter)
 {
     pid_t pid = fork();
     switch (pid) {
@@ -417,7 +417,7 @@ faxApp::runCmd(const char* cmd, bool changeIDs, IOHandler* waiter)
 	if (changeIDs)
 	    setRealIDs();
 	detachIO();
-	execl("/bin/sh", "sh", "-c", cmd, (char*) NULL);
+	Sys::execv(cmd, (char* const*) argv);
 	sleep(1);			// XXX give parent time
 	_exit(127);
     case -1:

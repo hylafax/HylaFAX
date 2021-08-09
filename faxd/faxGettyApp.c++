@@ -361,7 +361,17 @@ faxGettyApp::answerPhone(AnswerType atype, CallType ctype, const CallID& callid,
 		dup2(pipefd[1], STDOUT_FILENO);
 		Sys::close(pipefd[0]);
 		Sys::close(pipefd[1]);
-		execl("/bin/sh", "sh", "-c", (const char*) cmd, (char*) NULL);
+		{
+		    const char* argv[callid.size()+3];
+		    argv[0] = (const char*) dynamicConfig;
+		    argv[1] = (const char*) getModemDevice();
+		    u_short j = 0;
+		    for (; j < callid.size(); j++) {
+			argv[j+2] = (const char*) callid.id(j);
+		    }
+		    argv[j+2] = NULL;
+		    Sys::execv((const char*) dynamicConfig, (char* const*) argv);
+		}
 		sleep(1);
 		_exit(1);
 	    default:
@@ -856,8 +866,21 @@ faxGettyApp::notifyRecvDone(FaxRecvInfo& ri)
 	| quote |            quoted(ri.reason)	| enquote
 	| callid_formatted);
     traceServer("RECV FAX: %s", (const char*) cmd);
+
+    const char* argv[ri.callid.size()+6];
+    argv[0] = (const char*) faxRcvdCmd;
+    argv[1] = (const char*) ri.qfile;
+    argv[2] = (const char*) getModemDeviceID();
+    argv[3] = (const char*) ri.commid;
+    argv[4] = (const char*) ri.reason;
+    u_short j = 0;
+    for (; j < ri.callid.size(); j++) {
+	argv[j+5] = (const char*) ri.callid.id(j);
+    }
+    argv[j+5] = NULL;
+
     setProcessPriority(BASE);			// lower priority
-    runCmd(cmd, true, this);
+    runCmd(faxRcvdCmd, argv, true, this);
     setProcessPriority(state);			// restore priority
 }
 

@@ -444,7 +444,16 @@ Trigger::hook (TriggerEvent e, const char* id, const char* info)
 	if (info)
 		cmd.append(fxStr::format(" \"%s\"", info));
 	logInfo("HOOK CMD %s", (const char*)cmd);
-	faxApp::runCmd(cmd);
+
+	fxStr formattedMask = fxStr::format("0x%04x", mask);
+	const char* argv[6];
+	argv[0] = (const char*) hookCmd;
+	argv[1] = classNames[EventClass(e)];
+	argv[2] = (const char*) formattedMask;
+	argv[3] = id;
+	argv[4] = info;
+	argv[5] = NULL;
+	faxApp::runCmd((const char*) hookCmd, argv);
     }
 }
 
