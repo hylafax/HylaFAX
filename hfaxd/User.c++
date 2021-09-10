@@ -202,8 +202,9 @@ HylaFAXServer::checkuserHosts(FILE* db, const char* name)
 bool
 HylaFAXServer::checkpasswdHosts (const char* pass)
 {
-    if (strcmp(crypt(pass,passwd),passwd) == 0)
-        return true;
+    char* crypted = crypt(pass,passwd);
+    if (crypted && strcmp(crypted,passwd) == 0)
+	return true;
 
     return false;
 }
