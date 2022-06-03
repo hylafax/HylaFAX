@@ -152,6 +152,9 @@ export CXX=$(which g++)
 	--with-PATH_DPSRIP=%{faxspool}/bin/ps2fax \
 	--with-PATH_IMPRIP="" \
 	--with-SYSVINIT=%{initdir}/hylafax \
+%if 0%{rhel} == 7
+	--with-PODOFOINC="-std=c++11" \
+%endif
 	--with-INTERACTIVE=no
 
 # CFLAGS is set up by the HylaFAX configure script; setting it up here the

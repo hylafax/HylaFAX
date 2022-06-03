@@ -40,6 +40,9 @@ DEPTH=..
 SUBDIR=faxcover
 @MAKEINCLUDE@ @MAKELQUOTE@${DEPTH}/defs@MAKERQUOTE@
 
+LC++INCS = ${PODOFOINC}
+VLDLIBS = ${LIBPODOFO}
+
 C++FILES= faxcover.c++
 TARGETS	= faxcover
 

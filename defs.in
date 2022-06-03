@@ -202,6 +202,10 @@ LIBPAM		= @LIBPAM@
 LIBUTIL		= @LIBUTIL@
 LIBCRYPT	= @LIBCRYPT@
 
+#PoDoFo libraries
+LIBPODOFO	= @LIBPODOFO@
+PODOFOINC	= @PODOFOINC@
+
 #
 # Definitions used by common rules.
 #
