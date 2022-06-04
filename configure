@@ -2583,7 +2583,7 @@ EOF
 				tiff_offset_t="uint32"
 				tiff_bytecount_t="uint32"
 				;;
-		4.[0])		tiff_runlen_t="uint32"
+		4.[012])	tiff_runlen_t="uint32"
 				tiff_offset_t="uint64"
 				tiff_bytecount_t="uint64"
 				echo '#define TIFFHeader	TIFFHeaderClassic'
@@ -2628,7 +2628,7 @@ EOF
 Incompatible TIFF Library.
 
 HylaFAX ${VERSION} requires TIFF software distribution versions 3.4 through
-3.9.  If you do not have up to date TIFF software on your system
+4.2.  If you do not have up to date TIFF software on your system
 then you can retrieve it from the location where you obtained this software.
 The Home Page for version 3.5 and later is http://www.remotesensing.org/libtiff/
 EOF
