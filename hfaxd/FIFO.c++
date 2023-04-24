@@ -185,6 +185,9 @@ HylaFAXServer::FIFOMessage(const char* cp, u_int)
 	    (void) loadTrigger(emsg);
 	}
 	break;
+    default:
+	logError("Bad fifo message \"%s\"", cp);
+	break;
     }
 }
 
