@@ -287,10 +287,11 @@ HylaFAXServer::vsendQueuerACK(fxStr& emsg, const char* fmt, va_list ap)
 	return (false);
     }
     msg.insert(clientFIFOName | ":", 1);	// insert FIFO name for reply 
+    state |= S_WAITFIFO;
     bool ok = sendQueuerMsg(emsg, msg);
     if (ok) {
 	Dispatcher& disp = Dispatcher::instance();
-	for (state |= S_WAITFIFO; IS(WAITFIFO); disp.dispatch())
+	for (; IS(WAITFIFO); disp.dispatch())
 	    ;
 	if (fifoResponse.length() < 2) {	// too short to be valid
 	    emsg = "Unexpected response from scheduler: \"" |fifoResponse| "\"";
