@@ -734,7 +734,7 @@ SendFaxClient::fileType(const char* filename, fxStr& emsg)
 	Sys::close(fd);
 	return (NULL);
     }
-    char buf[512];
+    char buf[1024];
     int cc = Sys::read(fd, buf, sizeof (buf));
     Sys::close(fd);
     if (cc == 0) {
