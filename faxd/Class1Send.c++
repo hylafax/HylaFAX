@@ -116,7 +116,7 @@ Class1Modem::dialResponse(Status& eresult)
 	     */
 	    if (conf.class1EnableV34Cmd != "" && serviceType == SERVICE_CLASS10) {
 		if (conf.class10AutoFallback) return (V34FAIL);
-		if (atCmd(rhCmd, AT_NOTHING) && atResponse(rbuf, conf.t2Timer) == AT_CONNECT) return (OK);
+		if (atCmd(rhCmd, AT_NOTHING) && atResponse(rbuf, conf.t1Timer) == AT_CONNECT) return (OK);
 		if (wasTimeout()) abortReceive();
 		// Apparently the call was answered, V.8 didn't occur, but no V.21 HDLC was detected.
 		return (NOCARRIER);
@@ -222,7 +222,7 @@ Class1Modem::getPrologue(Class2Params& params, bool& hasDoc, Status& eresult, u_
 		    curcap = NULL;			// force initial setup
 		    break;
 		}
-	    } while (frame.moreFrames() && recvFrame(frame, FCF_SNDR, conf.t2Timer));
+	    } while (frame.moreFrames() && recvFrame(frame, FCF_SNDR, ((t1-(Sys::now()-start))*1000 + conf.t2Timer)));	// wait to T1 timeout, but at least T2
 	    if (frame.isOK()) {
 		switch (frame.getRawFCF()) {
 		case FCF_DIS:
@@ -251,10 +251,11 @@ Class1Modem::getPrologue(Class2Params& params, bool& hasDoc, Status& eresult, u_
 	/*
 	 * Wait up to T1 for a valid DIS.
 	 */
-	if ((unsigned) Sys::now()-start >= t1)
+	time_t now = Sys::now();
+	if ((unsigned) now-start >= t1)
 	    break;
 	if (!useV34) (void) switchingPause(eresult);
-	framerecvd = recvFrame(frame, FCF_SNDR, (Sys::now()-start)*1000);	// timer here is T1
+	framerecvd = recvFrame(frame, FCF_SNDR, ((t1-(now-start)))*1000 + conf.t2Timer);	// wait to T1 timeout, but wait at least T2
     }
     eresult = Status(126, "No receiver protocol (T.30 T1 timeout)");
     protoTrace(eresult.string());
