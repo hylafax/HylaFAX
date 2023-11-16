@@ -116,10 +116,50 @@ Class1Modem::dialResponse(Status& eresult)
 	     */
 	    if (conf.class1EnableV34Cmd != "" && serviceType == SERVICE_CLASS10) {
 		if (conf.class10AutoFallback) return (V34FAIL);
-		if (atCmd(rhCmd, AT_NOTHING) && atResponse(rbuf, conf.t1Timer) == AT_CONNECT) return (OK);
-		if (wasTimeout()) abortReceive();
-		// Apparently the call was answered, V.8 didn't occur, but no V.21 HDLC was detected.
-		return (NOCARRIER);
+		/*
+		 * As the modem says that it already detected a carrier of some sort, presumably
+		 * V.21 HDLC, we don't need to wait T1 or even T2 for it.  So, we set a short
+		 * timeout period for the CONNECT message here in case the modem glitch mentioned
+		 * below is an issue on this call.
+		 */
+		if (atCmd(rhCmd, AT_NOTHING) && atResponse(rbuf, 2000) == AT_CONNECT) return (OK);
+		if (wasTimeout()) {
+		    /*
+		     * The Si2435 has a glitch (at least in "D" firmware) where it can miss the +FRH=3
+		     * command above at this point in the call.  The workaround is to just re-issue the
+		     * command.  We deliberately do not abortRecive() here, as that trips things up further.
+		     */
+		    if (atCmd(rhCmd, AT_NOTHING) && atResponse(rbuf, conf.t1Timer) == AT_CONNECT) return (OK);
+		    if (wasTimeout()) {
+			// Apparently T1 elapsed with no further carrier signal.
+			abortReceive();
+			return (NOCARRIER);
+		    }
+		    if (lastResponse == AT_OK) {
+			/*
+			 * The second +FRH=3 actually canceled the first.  So, in this instance there was
+			 * no glitch, and we probably should have had a longer timeout setting on the first
+			 * +FRH=3.  But, since the glitch condition is more likely we'll just re-issue +FRH=3
+			 * one last time.
+			 */
+			if (atCmd(rhCmd, AT_NOTHING) && atResponse(rbuf, conf.t1Timer) == AT_CONNECT) return (OK);
+			if (wasTimeout()) {
+			    // Apparently T1 elapsed with no further carrier signal.
+			    abortReceive();
+			    return (NOCARRIER);
+			}
+			if (lastResponse == AT_OK) {
+			    // The Si2435 appears to result OK on its own after 30 seconds' wait at this point.
+			    return (NOCARRIER);
+			}
+			// We got some other result (besides CONNECT or OK) to the third +FRH=3 command.
+			return (FAILURE);
+		    }
+		    // We got some other result (besides CONNECT or OK) to the second +FRH=3 command.
+		    return (FAILURE);
+		}
+		// We got some other result (besides CONNECT) to the second +FRH=3 command.
+		return (FAILURE);
 	    }
 	    if (r == AT_OK)
 		return (NOCARRIER);
