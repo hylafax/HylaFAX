@@ -14,6 +14,8 @@ ModemFlowControl:	rtscts		# software flow control is not supported
 ModemMfrQueryCmd:	!SiLabs
 ModemModelQueryCmd:	ATI6
 
+Class1RecvAbortOK:	0		# abort behavior is inconsistent
+
 # If your line supports Caller-ID, you may want to uncomment this...
 # ModemResetCmds:	AT+VCID=1
 # CallIDPattern:	"NMBR="

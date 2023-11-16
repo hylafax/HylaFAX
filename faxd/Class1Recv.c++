@@ -1043,8 +1043,14 @@ void
 Class1Modem::abortPageRecv()
 {
     if (useV34) return;				// nothing to do in V.34
-    char c = CAN;				// anything other than DC1/DC3
-    putModem(&c, 1, 1);
+    if (conf.class1RecvAbortOK) {
+	char c = CAN;				// anything other than DC1/DC3
+	putModem(&c, 1, 1);
+    } else {
+        (void) atCmd("AT", AT_NOTHING);
+    }
+
+
 }
 
 bool

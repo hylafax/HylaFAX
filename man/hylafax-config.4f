@@ -2691,9 +2691,9 @@ from the modem after aborting an
 .SM HDLC
 frame receive (``\s-1AT+FRH=3\s+1'').
 If this number is zero, then the modem is assumed to not correctly
-implement aborting and instead the driver will wait 200ms,
-flush any input, and then send ``\s-1AT\en\s+1'' and wait
-100ms for an ``\s-1OK\s+1'' result.
+implement aborting and instead the driver will send ``\s-1AT\en\s+1'' and wait
+500ms for an ``\s-1OK\s+1'' result.  If this number is zero, then the
+the same is assumed for aborting ``\s-1AT+FRM=n\s+1''.
 .TP
 .B Class1RecvIdentTimer
 The time, in milliseconds, to wait for an initial

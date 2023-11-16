@@ -552,19 +552,18 @@ Class1Modem::abortReceive()
     if (useV34) return;			// nothing to do in V.34
     bool b = wasTimeout();
     char c = CAN;			// anything other than DC1/DC3
-    putModem(&c, 1, 1);
     /*
      * If the modem handles abort properly, then just
-     * wait for an OK result.  Otherwise, wait a short
-     * period of time, flush any input, and then send
-     * "AT" and wait for the return "OK".
+     * wait for an OK result after sending the character
+     * abort.  Otherwise, just send "AT" and wait for the
+     * return "OK".
      */
-    if (conf.class1RecvAbortOK == 0) {	// modem doesn't send OK response
-	pause(200);
-	flushModemInput();
-	(void) atCmd("AT", AT_OK, 100);
-    } else
+    if (conf.class1RecvAbortOK) {
+	putModem(&c, 1, 1);
 	while (!waitFor(AT_OK, conf.class1RecvAbortOK) && lastResponse == AT_OTHER && !wasTimeout());
+    } else {
+	(void) atCmd("AT", AT_OK, 500);
+    }
     setTimeout(b);			// XXX putModem clobbers timeout state
 }
 
