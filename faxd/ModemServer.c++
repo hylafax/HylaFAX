@@ -1562,9 +1562,9 @@ ModemServer::resetBlock()
 }
 
 void
-ModemServer::modemFlushInput()
+ModemServer::modemFlushInput(bool silent)
 {
-    traceModemOp("flush i/o");
+    if (!silent) traceModemOp("flush i/o");
     flushModemInput();
     if (tcflush(modemFd, TCIFLUSH) != 0)
 	traceModemOp("tcflush: %m");

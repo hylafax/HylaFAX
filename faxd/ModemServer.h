@@ -164,7 +164,7 @@ protected:
     bool	modemWaitForRings(u_short rings, CallType&, CallID&);
     CallType	modemAnswerCall(AnswerType, Status&, const char* dialnumber = NULL, bool doSecondAnswer = false);
     void	modemAnswerCallCmd(CallType);
-    void	modemFlushInput();
+    void	modemFlushInput(bool silent = false);
     void	modemHangup();
 // server state and related control interfaces
     void	changeState(ModemServerState, long timeout = 0);

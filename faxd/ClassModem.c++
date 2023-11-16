@@ -544,8 +544,8 @@ ClassModem::putModemDLEData(const u_char* data, u_int cc, const u_char* bitrev, 
     return (true);
 }
 
-void ClassModem::flushModemInput()
-    { server.modemFlushInput(); }
+void ClassModem::flushModemInput(bool silent)
+    { server.modemFlushInput(silent); }
 bool ClassModem::putModem(void* d, int n, long ms)
     { return server.putModem(d, n, ms); }
 bool ClassModem::putModemData(void* d, int n)
@@ -934,6 +934,14 @@ ClassModem::atCmd(const fxStr& cmd, ATResponse r, long ms)
     u_int cmdlen;
     u_int pos;
     bool respPending;
+
+    /*
+     * We clear any lingering input from the modem, as we're not going to be expecting it.
+     * Most notably we do sometimes see spurious +FCERROR messages from Si2417/Si2435
+     * after an +FRM command is aborted.
+     */
+    flushModemInput(true);
+
     if (lastResponse == AT_RING) lastResponse = AT_NOTHING;
     do {
 	cmdlen = cmd.length();

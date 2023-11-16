@@ -267,7 +267,7 @@ public:
     void	endTimedTransfer();
     bool	wasTimeout();
     void	setTimeout(bool);
-    void	flushModemInput();
+    void	flushModemInput(bool silent = false);
     bool	putModem(void* data, int n, long ms = 0);
     bool	putModemData(void* data, int n);
     bool	putModemDLEData(const u_char* data, u_int,
