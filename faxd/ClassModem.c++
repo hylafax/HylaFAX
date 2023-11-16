@@ -35,15 +35,15 @@
  */
 Status ClassModem::callStatus[10] = {
     Status(0, "Call successful"),				// OK
-    Status(1, "Busy signal detected"),			// BUSY
+    Status(1, "Busy signal detected"),				// BUSY
     Status(2, "No carrier detected"),				// NOCARRIER
-    Status(3, "No answer from remote"),			// NOANSWER
+    Status(3, "No answer from remote"),				// NOANSWER
     Status(4, "No local dialtone"),				// NODIALTONE
     Status(5, "Invalid dialing command"),			// ERROR
     Status(6, "Unknown problem"),				// FAILURE
     Status(7, "Carrier established, but Phase A failure"),	// NOFCON
     Status(8, "Data connection established (wanted fax)"),	// DATACONN
-    Status(9, "Glare - RING detected"),			// RING
+    Status(9, "Glare - RING detected"),				// RING
 };
 /*
  * Service class descriptions.  The first three

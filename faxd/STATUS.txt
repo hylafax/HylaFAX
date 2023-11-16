@@ -238,7 +238,7 @@
 421      : Unable to configure modem for data use
 422      : Can not setup modem
 
-500-E599 : paging failures
+500-599 : paging failures
 ===============================================================================
 500      : No initial ID response from paging central
 501      : Login failed multiple times
