@@ -1,0 +1,20 @@
+#
+# prototype config for Silicon Laboratories Si2435 and Si2417
+#
+
+# CONFIG:CLASS1:D3:18F:.*: Manufacturer=SiLabs Model='Si2417'
+# CONFIG:CLASS1:F:18F:.*: Manufacturer=SiLabs Model='Si2417'
+#
+# BEGIN-SERVER
+# END-SERVER
+
+ModemType:		Class1		# use this to supply a hint
+ModemFlowControl:	rtscts		# software flow control is not supported
+
+ModemMfrQueryCmd:	!SiLabs
+ModemModelQueryCmd:	ATI6
+
+# If your line supports Caller-ID, you may want to uncomment this...
+# ModemResetCmds:	AT+VCID=1
+# CallIDPattern:	"NMBR="
+# CallIDPattern:	"NAME="

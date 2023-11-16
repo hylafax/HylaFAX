@@ -130,6 +130,8 @@ HYLAFAXSRC=\
 	config/rc32acl-1                                                      \
 	config/rockwell-k56                                                   \
 	config/rockwell-rc                                                    \
+	config/silabs                                                         \
+	config/silabs-10                                                      \
 	config/sierra                                                         \
 	config/skel                                                           \
 	config/t38modem                                                       \

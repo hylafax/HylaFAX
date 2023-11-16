@@ -83,13 +83,14 @@ const char* ClassModem::ATresponses[19] = {
     "Voice connection",		// AT_VCON
     "<Unknown response>"	// AT_OTHER
 };
-const char* ClassModem::callTypes[6] = {
+const char* ClassModem::callTypes[7] = {
     "unknown",
     "data",
     "fax",
     "voice",
     "error",
-    "done"
+    "done",
+    "abort"
 };
 const char* ClassModem::answerTypes[6] = {
     "any",
@@ -204,7 +205,7 @@ static const AnswerMsg answerMsgs[] = {
 { "+FHS:",	5,
    ClassModem::AT_NOTHING, ClassModem::NOCARRIER, ClassModem::CALLTYPE_ERROR },
 { "OK",		2,
-   ClassModem::AT_NOTHING, ClassModem::NOCARRIER, ClassModem::CALLTYPE_ERROR },
+   ClassModem::AT_NOTHING, ClassModem::OK,	  ClassModem::CALLTYPE_ABORT },
 { "BUSY",	4,
    ClassModem::AT_NOTHING, ClassModem::NOCARRIER, ClassModem::CALLTYPE_ERROR },
 { "FAX",	 3,
@@ -285,7 +286,7 @@ again:
 }
 
 CallType
-ClassModem::answerCall(AnswerType atype, Status& eresult, const char* number)
+ClassModem::answerCall(AnswerType atype, Status& eresult, const char* number, bool doSecondAnswer)
 {
     CallType ctype = CALLTYPE_ERROR;
     /*
@@ -307,6 +308,14 @@ ClassModem::answerCall(AnswerType atype, Status& eresult, const char* number)
 	answerCmd = conf.answerAnyCmd;
     if (atCmd(answerCmd, AT_NOTHING)) {
 	ctype = answerResponse(answerCmd, eresult);
+	if (ctype == CALLTYPE_ABORT) {
+	    if (doSecondAnswer && atCmd(conf.secondAnswerCmd, AT_NOTHING)) {
+		ctype = answerResponse(answerCmd, eresult);
+	    } else {
+		eresult = Status(12, "Ring detected without successful handshake");
+		ctype = CALLTYPE_ERROR;
+	    }
+	}
 	if (atype == ANSTYPE_DIAL) ctype = CALLTYPE_FAX;	// force as fax
 	if (ctype == CALLTYPE_UNKNOWN) {
 	    /*

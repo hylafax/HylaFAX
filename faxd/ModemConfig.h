@@ -116,6 +116,7 @@ public:
     fxStr	answerDataBeginCmd;	// cmd to start inbound data session
     fxStr	answerFaxBeginCmd;	// cmd to start inbound fax session
     fxStr	answerVoiceBeginCmd;	// cmd to start inbound voice session
+    fxStr	secondAnswerCmd;	// cmd to restart after abort to first answer cmd
     fxStr	sendBeginCmd;		// cmd to start outbound session
     fxStr	recvSuccessCmd;		// cmd for after successful reception
     fxStr	class0Cmd;		// cmd for setting Class 0
@@ -178,6 +179,7 @@ public:
     bool	class1ValidateV21Frames;// check received FCS values in V.21
     bool	class1ModemHasDLEBug;	// modem doesn't double-up DLEs in V.21
     bool	class1HasRHConnectBug;	// modem reports CONNECT after +FRH=3 to non-V.21-HDLC data
+    bool	class10AutoFallback;	// modem automatically falls back to G3 mode if no ANSam detected
 					// for class 2 and 2.0:
     fxStr	class2Cmd;		// cmd for setting Class 2/2.0
     fxStr	class2DCCQueryCmd;	// cmd to query modem capabilities

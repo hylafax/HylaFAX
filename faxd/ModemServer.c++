@@ -839,7 +839,7 @@ bool ModemServer::serverBusy() const
 
 bool ModemServer::modemWaitForRings(u_short rings, CallType& type, CallID& callid)
     { return modem->waitForRings(rings, type, callid); }
-CallType ModemServer::modemAnswerCall(AnswerType atype, Status& eresult, const char* dialnumber)
+CallType ModemServer::modemAnswerCall(AnswerType atype, Status& eresult, const char* dialnumber, bool doSecondAnswer)
     { return modem->answerCall(atype, eresult, dialnumber); }
 void ModemServer::modemAnswerCallCmd(CallType ctype)
     { modem->answerCallCmd(ctype); }

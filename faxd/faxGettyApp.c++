@@ -426,7 +426,7 @@ faxGettyApp::answerPhone(AnswerType atype, CallType ctype, const CallID& callid,
 	    } else {
 		// NB: answer based on ctype, not atype
 		if (!(noAnswerVoice && ctype == ClassModem::CALLTYPE_VOICE)) 
-		    ctype = modemAnswerCall(ctype, eresult, dialnumber);
+		    ctype = modemAnswerCall(ctype, eresult, dialnumber, false);
 		callResolved = processCall(ctype, eresult, callid);
 	    }
 	} else if (atype == ClassModem::ANSTYPE_ANY) {

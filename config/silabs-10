@@ -1,0 +1,27 @@
+#
+# prototype config for Silicon Laboratories Si2435
+#
+
+# CONFIG:CLASS1.0:D3:18F:.*: Manufacturer=SiLabs Model='Si2435'
+# CONFIG:CLASS1.0:F:18F:.*: Manufacturer=SiLabs Model='Si2435'
+#
+# BEGIN-SERVER
+# END-SERVER
+
+ModemType:		Class1.0	# use this to supply a hint
+ModemFlowControl:	rtscts		# software flow control is not supported
+ModemRate:		115200
+
+ModemMfrQueryCmd:	!SiLabs
+ModemModelQueryCmd:	ATI6
+
+Class1EnableV34Cmd:	"AT+F34=14,1\nAT+A8E=6,5"	# 33600-2400 primary, fixed 1200 control, issue +A8x indications
+ModemClassQueryCmd:	!0,1,1.0,8			# the Si2435 supports Class 1.0 but omits it in the +FCLASS=? response
+ModemOnHookCmd:		"<delay:5>ATH0"			# avoids non-response after V.34-Fax session terminates (Si3018 Rev F / Si2435 Rev F)
+Class10AutoFallback:	false				# DTE must implement G3 fallback
+ModemSecondAnswerCmd:	AT+FTH=3			# to restart answer process after failure to detect V.8 handshake
+
+# If your line supports Caller-ID, you may want to uncomment this...
+# ModemResetCmds:	AT+VCID=1
+# CallIDPattern:	"NMBR="
+# CallIDPattern:	"NAME="

@@ -1161,9 +1161,9 @@ EOF
     # Here we build up a MODEMCLASSES string and follow
     # (for no real reason) the enumeration in faxd/ClassModem.c++
     # Class 1 = 1; Class 2 = 2; Class 2.0 = 3;
-    # Class 1.0 = 4; Class 2.1 = 5;   
+    # Class 1.0 = 4; Class 2.1 = 5; Class 256 = 6
 
-    RESPONSE="`echo $RESPONSE | $SED -e 's/[()]//g' \
+    RESPONSE="`echo $RESPONSE | $SED -e 's/[()]//g' -e 's/256/6/g' \
 	-e 's/2\.0/3/g' -e 's/1\.0/4/g' -e 's/2\.1/5/g'`";
     SUPPORT="This modem looks to have support for Class "
     MODEMCLASSES="";

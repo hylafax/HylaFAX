@@ -110,9 +110,10 @@ public:
 	CALLTYPE_FAX	= 2,	// fax connection
 	CALLTYPE_VOICE	= 3,	// voice connection
 	CALLTYPE_ERROR	= 4,	// error deducing type of incoming call
-	CALLTYPE_DONE	= 5	// subprocess completed call handling
+	CALLTYPE_DONE	= 5,	// subprocess completed call handling
+	CALLTYPE_ABORT	= 6	// answer process interrupted may need restart
     };
-    static const char* callTypes[6];
+    static const char* callTypes[7];
 
     enum {			// ClassModem::SpeakerVolume
 	OFF	= 0,		// nothing
@@ -335,7 +336,7 @@ public:
      * at any time in this procedure.
      */
     virtual bool waitForRings(u_short rings, CallType&, CallID&);
-    virtual CallType answerCall(AnswerType, Status& eresult, const char* dialnumber = NULL);
+    virtual CallType answerCall(AnswerType, Status& eresult, const char* dialnumber = NULL, bool doSecondAnswer = false);
     virtual void answerCallCmd(CallType);
 
     /*

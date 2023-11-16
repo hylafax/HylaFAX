@@ -221,7 +221,7 @@ public:
     void	sendAbort();
 
 // receive support
-    CallType	answerCall(AnswerType, Status& eresult, const char* number);
+    CallType	answerCall(AnswerType, Status& eresult, const char* number, bool doSecondAnswer);
     FaxParams	modemDIS() const;
     bool	setupReceive();
     bool	recvBegin(Status& eresult);

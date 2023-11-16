@@ -97,13 +97,30 @@ Class1Modem::dialResponse(Status& eresult)
 	case AT_OK:
 	    /*
 	     * Apparently some modems (like the AT&T DataPort) can respond OK
-	     * to indicate NO CARRIER.  Other modems, like the Lucent/Agere Venus
-	     * and Agere/LSI OCM/OCF and CFAX34 can respond OK or DLE+EOT to
-	     * indicate a V.34/V.8 handshake incompatibility.  We need to trigger
-	     * hasV34Trouble for the latter case.
+	     * to indicate NO CARRIER.
+             *
+	     * Other modems, like the Lucent/Agere Venus and Agere/LSI OCM/OCF and
+	     * CFAX34 can respond OK or DLE+EOT to indicate a V.34/V.8 handshake
+	     * incompatibility.  We need to trigger hasV34Trouble for this case.
+	     *
+	     * And yet other modems, like the Silicon Laboratories Si2435, appear
+	     * to attempt a spotty ITU V.251 section 7 implementation and result OK
+	     * whenever ANSam is not detected.  (This appears to defy the last
+	     * direction in V.251 7.3 as it does this even if <v8o>=6 and V.21 HDLC
+	     * is detected.  Apparently this is a stated effort to allow the DTE to re-attempt
+	     * V.8 handshaking.)  Therefore, in this case an automatic fallback to G3 mode does
+	     * not occur and to fall back we are required issue +FRH=3 and interpret
+	     * a timeout as a NO CARRIER condition (because it reports +A8A:4 instead
+	     * of +A8A:0 when any signal - such as a busy signal - occurs after an
+	     * answer condition is detected).
 	     */
-	    if (conf.class1EnableV34Cmd != "" && serviceType == SERVICE_CLASS10)
-		return (V34FAIL);
+	    if (conf.class1EnableV34Cmd != "" && serviceType == SERVICE_CLASS10) {
+		if (conf.class10AutoFallback) return (V34FAIL);
+		if (atCmd(rhCmd, AT_NOTHING) && atResponse(rbuf, conf.t2Timer) == AT_CONNECT) return (OK);
+		if (wasTimeout()) abortReceive();
+		// Apparently the call was answered, V.8 didn't occur, but no V.21 HDLC was detected.
+		return (NOCARRIER);
+	    }
 	    if (r == AT_OK)
 		return (NOCARRIER);
 	    else

@@ -276,6 +276,7 @@ ModemResetCmds	string	\-	additional commands when resetting modem
 ModemResetDelay	integer	\s-12600\s+1	delay (ms) after placing DTR ON
 ModemResultCodesCmd	string	\s-1ATQ0\s+1	command for enabling result codes
 ModemRevQueryCmd	string	\s-1\fIsee below\fP\s+1	command for querying modem firmware revision
+ModemSecondAnswerCmd	string	\-	command to restart answer process
 ModemSendBeginCmd	string	\-	command to send on establishing carrier
 ModemSendFillOrder	string	\s-1LSB2MSB\s+1	bit order for sending facsimile data
 ModemSetVolumeCmd	string	\s-1\fIsee below\fP\s+1	commands for setting modem speaker volume level
@@ -300,6 +301,7 @@ Class0Cmd	string	\s-1AT+FCLASS=0\s+1	Class 0: command to enter class 0
 Class1Cmd	string	\s-1AT+FCLASS=1\s+1	Class 1: command to enter class 1
 Class1Cmd	string	\s-1AT+FCLASS=1.0\s+1	Class 1.0: command to enter class 1
 Class1AdaptRecvCmd	string	\-	Class 1/1.0: command for adaptive reception support
+Class10AutoFallback	boolean	\s-1Yes\s+1	Class 1.0: modem implements G3 fallback
 Class1ColorJPEGSupport	boolean	\s-1No\s+1	Class 1/1.0: to enable color JPEG fax support
 Class1EnableV34Cmd	string	\-	Class 1/1.0: command to enable V.34-fax support
 Class1ECMSupport	boolean	\s-1Yes\s+1	Class 1/1.0: enable T.30-A ECM support
@@ -2341,6 +2343,11 @@ If the parameter begins with a ``!'', then the remainder of the
 string is taken to be the identification string and no command
 is issued to the modem.
 .TP
+.B ModemSecondAnswerCmd
+The command to send to the modem in the event that the first answer command
+results with ``OK'' rather than an otherwise expected indication.  This command
+is intended to resume the answer procedure where the first left off.
+.TP
 .B ModemSendBeginCmd
 The command to send to the modem upon establishing carrier during
 a transmit operation.
@@ -2502,6 +2509,11 @@ The command used to enable adaptive reception support (usually
 ``AT+FAR=1'').  This feature is new in T.31, and many modems
 will not support it.  This feature may reduce the number of
 reception failures due to errors cascading from +FCERROR messages.
+.TP
+.B Class10AutoFallback
+Whether or not the modem implements an automatic fallback to G3
+mode if V.8 handshaking ANSam is not detected for a Class 1.0 V.34-Fax (SuperG3)
+call.
 .TP
 .B Class1ColorJPEGSupport
 Whether or not to enable support for T.30-E full-color facsimile

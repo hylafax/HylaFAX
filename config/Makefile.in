@@ -95,6 +95,8 @@ CONFIGFILES=class1 \
 	rc32acl-1 \
 	rockwell-k56 \
 	rockwell-rc \
+	silabs \
+	silabs-10 \
 	t38modem \
 	telebit-t3000 \
     telebit-qblazer \

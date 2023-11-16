@@ -47,7 +47,7 @@
  * flow control state to be setup to our liking.
  */
 CallType
-Class1Modem::answerCall(AnswerType type, Status& eresult, const char* number)
+Class1Modem::answerCall(AnswerType type, Status& eresult, const char* number, bool doSecondAnswer)
 {
     // Reset modemParams.br to non-V.34 settings.  If V.8 handshaking
     // succeeds, then it will be changed again.
@@ -55,7 +55,7 @@ Class1Modem::answerCall(AnswerType type, Status& eresult, const char* number)
 
     if (flowControl == FLOW_XONXOFF)
 	setXONXOFF(FLOW_NONE, FLOW_NONE, ACT_FLUSH);
-    return ClassModem::answerCall(type, eresult, number);
+    return ClassModem::answerCall(type, eresult, number, (serviceType == SERVICE_CLASS10 && conf.secondAnswerCmd != ""));
 }
 
 /*
