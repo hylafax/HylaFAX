@@ -13,6 +13,7 @@
 010      : Blacklisted by modem
 011      : Ringback detected, no answer without CED
 012      : Ring detected without successful handshake
+013      : V.34/V.8 handshake incompatibility
 
 050-099 : non Class-specific fax protocol failures
 ===============================================================================

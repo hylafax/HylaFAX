@@ -89,11 +89,25 @@ Class1Modem::dialResponse(Status& eresult)
 	case AT_ERROR:	    return (ERROR);	// error in dial command
 	case AT_BUSY:	    return (BUSY);	// busy signal
 	case AT_NOCARRIER:  return (NOCARRIER);	// no carrier detected
-	case AT_OK:	    return (NOCARRIER);	// (for AT&T DataPort)
 	case AT_NODIALTONE: return (NODIALTONE);// local phone connection hosed
 	case AT_NOANSWER:   return (NOANSWER);	// no answer or ring back
 	case AT_TIMEOUT:    return (FAILURE);	// timed out w/o response
 	case AT_CONNECT:    return (OK);	// fax connection
+	case AT_DLEEOT:
+	case AT_OK:
+	    /*
+	     * Apparently some modems (like the AT&T DataPort) can respond OK
+	     * to indicate NO CARRIER.  Other modems, like the Lucent/Agere Venus
+	     * and Agere/LSI OCM/OCF and CFAX34 can respond OK or DLE+EOT to
+	     * indicate a V.34/V.8 handshake incompatibility.  We need to trigger
+	     * hasV34Trouble for the latter case.
+	     */
+	    if (conf.class1EnableV34Cmd != "" && serviceType == SERVICE_CLASS10)
+		return (V34FAIL);
+	    if (r == AT_OK)
+		return (NOCARRIER);
+	    else
+		return (FAILURE);
 	case AT_FCERROR:
 	    /*
 	     * Some modems that support adaptive-answer assert a data

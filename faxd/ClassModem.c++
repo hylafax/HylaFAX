@@ -33,7 +33,7 @@
 /*
  * Call status description strings.
  */
-Status ClassModem::callStatus[10] = {
+Status ClassModem::callStatus[11] = {
     Status(0, "Call successful"),				// OK
     Status(1, "Busy signal detected"),				// BUSY
     Status(2, "No carrier detected"),				// NOCARRIER
@@ -44,6 +44,7 @@ Status ClassModem::callStatus[10] = {
     Status(7, "Carrier established, but Phase A failure"),	// NOFCON
     Status(8, "Data connection established (wanted fax)"),	// DATACONN
     Status(9, "Glare - RING detected"),				// RING
+    Status(13, "V.34/V.8 handshake incompatibility"),		// V34FAIL
 };
 /*
  * Service class descriptions.  The first three

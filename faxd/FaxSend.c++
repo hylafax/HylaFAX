@@ -328,6 +328,9 @@ FaxServer::sendFax(FaxRequest& fax, FaxMachineInfo& clientInfo, const fxStr& num
 	fax.ndials++;			// number of consecutive failed calls
 	fax.totdials++;			// total attempted calls
 	switch (callstat) {
+	case ClassModem::V34FAIL:	// carrier seen, but V.34/V.8 handshake incompatibility
+	    clientInfo.setHasV34Trouble(true);
+	    /* fall thru... */
 	case ClassModem::NOFCON:	// carrier seen, but handshake failed
 	    clientInfo.setCalledBefore(true);
 	    /* fall thru... */

@@ -99,9 +99,10 @@ public:
 	FAILURE	   = 6,		// other problem (e.g. modem turned off)
 	NOFCON	   = 7,		// carrier established, but phase a failure
 	DATACONN   = 8,		// data carrier established
-	RING	   = 9		// glare - ring detected after dial
+	RING	   = 9,		// glare - ring detected after dial
+	V34FAIL	   = 10,	// V.34 handshake failure
     };
-    static Status callStatus[10];	 // printable call status
+    static Status callStatus[11];	 // printable call status
 
     enum {			// ClassModem::CallType
 	CALLTYPE_UNKNOWN = 0,	// unknown variety
