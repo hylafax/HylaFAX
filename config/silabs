@@ -14,7 +14,51 @@ ModemFlowControl:	rtscts		# software flow control is not supported
 ModemMfrQueryCmd:	!SiLabs
 ModemModelQueryCmd:	ATI6
 
-Class1RecvAbortOK:	0		# abort behavior is inconsistent
+#
+# The Si2435 has some unique considerations...
+#
+# 1) It expects the DTE to wait 100 ms after what the manufacturer calls a "state change" before sending other
+#    commands.  So, the results of "NO CARRIER", "BUSY", "LINE IN USE", and "NO DIALTONE" represent state changes.
+#    A state change is further defined to be following the "OK" result to ATH0, AT+FCLASS, AT&T0, AT+VLS, ATZ,
+#    AT&T7, and a character abort.  However, failure to strictly employ all these 100 ms waits does not seem to
+#    be problematic, but it is the reason for the <delay:10> in the Class1Cmd, below, as well as the reason that
+#    HylaFAX delays 100ms after a command abort.
+#
+# 2) The +FRH and +FRM commands have 30s timers, which if they expire, result with OK and NO CARRIER,
+#    respectively.  The timer for +FRM doesn't likely complicate anything.  The +FRH timer requires that the +FRH
+#    commmand be repeated upon timer expiry, and HylaFAX does this.
+#
+# 3) The CONNECT response to +FRH=3 does not come immediately upon detection of the first V.21 HDLC flag, but
+#    instead, does so when eight consecutive flags have been detected.  This means that the CONNECT response is
+#    effectively delayed by 214 ms. Consequently, the FaxT4Timer should be increased by at least that much in
+#    order to compensate. However, we go even longer to reduce the risk of the following...
+#
+# 4) Upon expiry of the T4 or T2 timer the +FRH=3 command must be canceled (or aborted).  Upon sending the cancel
+#    byte the modem should stop whatever state it was in and result with OK.  However, if it was at some point in
+#    the detection of eight consecutive V.21 HDLC flags, mentioned above, the Si2435 may report CONNECT, instead.
+#    Sometimes this CONNECT response also involves a return to command mode, but not always, and V.21 HDLC data
+#    is never reported.  Unfortunately, sometimes this sequence leads to the modem becoming stuck in online mode
+#    and completely unresponsive to further commands.  Thus, we use the S30 "Disconnect Activity Timer" which
+#    places the modem on hook and in command mode if its timer elapses without any serial port activity, ring, or
+#    Caller ID.  We set the S30 timer at 59 seconds to allow for most of HylaFAX's +FRS 60-second timeout to
+#    function while utilizing the +FRS command as a means to trigger the S30 timer in session.  (The +FRS command
+#    may result in ERROR at 59 seconds but may also simply be hidden in the timeout abort and exchange.)  This
+#    saves us from trying to deal with it in the resetmodem script.  We don't have to worry about the +FRH=3
+#    timeouts, as the modem times those out at 30 seconds, itself, mentioned above.
+#
+# 5) The +FRH=3 cancelation problem seems to happen less frequently when the AT command is used to cancel +FRH=3
+#    instead of the <CAN> byte. So, that's why we set Class1RecvAbortOK to 0.
+#
+# 6) Because of the 8-flag requirement for V.21 HDLC detection, the +FCERROR result to +FRM is not overly
+#    sensitive, and Class1RMPersistence is unnecessary.  Furthermore, fast turnaround with a +FRM command after a
+#    previous +FCERROR result leads to unexpected behavior, possibly because of a need for a "state change" wait,
+#    mentioned above.  So, Class1RMPersistence should be set to 1.
+#
+
+FaxT4Timer: 3500
+Class1RMPersistence: 1
+Class1Cmd: "AT+FCLASS=1\n<delay:10>ATS30=59"
+Class1RecvAbortOK: 0
 
 # If your line supports Caller-ID, you may want to uncomment this...
 # ModemResetCmds:	AT+VCID=1

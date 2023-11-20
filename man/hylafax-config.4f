@@ -2487,15 +2487,21 @@ i.e. receipt of \s-1DIS/DCS\s+1.
 The value of the
 .SM T2
 timer in milliseconds.
-This timer is used to time out receiving responses and commands.
+This timer is used to limit the wait for reception of expected
+.SM HDLC
+frame commands from the remote.  An example would be waiting for the PPS signal during Phase D.
+The specification gives this as 6.0s +/- 15%.
+Usually the expiration of this timer means that the fax session has failed.
 .TP
 .B FaxT4Timer
 The value of the
 .SM T4
 timer in milliseconds.
-This timer is used to time out the reception of
+This timer is used to limit the wait for reception of
 .SM HDLC
-frames and, usually, trigger frame retransmissions.
+frames responses from the remote.  An example would be waiting for the response to the PPS signal during Phase D.
+The specification gives this as 3.0s +/- 15% for automatic units and 4.5s +/- 15% for manual units.
+Usually the expiration of this timer triggers retransmissions of commands.
 .SH "CLASS 1 MODEM CONFIGURATION PARAMETERS"
 .PP
 The following parameters are specific to the configuration
