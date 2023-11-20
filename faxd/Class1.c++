@@ -1454,7 +1454,7 @@ Class1Modem::recvFrame(HDLCFrame& frame, u_char dir, long ms, bool readPending, 
 		}
 	    }
 	} while (((u_int) Sys::now()-start < howmany(conf.t1Timer, 1000)) && !wasTimeout() &&
-	    (lastResponse == AT_FCERROR || lastResponse == AT_NOCARRIER || (lastResponse == AT_ERROR && onhooks <= conf.class1HookSensitivity)));
+	    (lastResponse == AT_FCERROR || lastResponse == AT_NOCARRIER || lastResponse == AT_OK || (lastResponse == AT_ERROR && onhooks <= conf.class1HookSensitivity)));
     }
     if (readPending) {
         stopTimeout("waiting for HDLC flags");

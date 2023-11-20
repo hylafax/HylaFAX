@@ -602,7 +602,7 @@ Class1Modem::recvPage(TIFF* tif, u_int& ppm, Status& eresult, const fxStr& id)
 		do {
 		    (void) atCmd(rmCmd, AT_NOTHING);
 		    rmResponse = atResponse(rbuf, conf.class1RMPersistence ? conf.t2Timer + 2900 : conf.t2Timer - 2900);
-		} while ((rmResponse == AT_NOTHING || rmResponse == AT_FCERROR) && ++attempts < conf.class1RMPersistence);
+		} while ((rmResponse == AT_NOTHING || rmResponse == AT_FCERROR || rmResponse == AT_OK) && ++attempts < conf.class1RMPersistence);
 		if (rmResponse == AT_CONNECT) {
 		    /*
 		     * We don't want the AT+FRM=n command to get buffered,
@@ -1072,7 +1072,7 @@ Class1Modem::raiseRecvCarrier(bool& dolongtrain, Status& eresult)
     do {
 	(void) atCmd(rmCmd, AT_NOTHING);
 	lastResponse = atResponse(rbuf, conf.class1RMPersistence ? conf.t2Timer + 2900 : conf.t2Timer - 2900);
-    } while ((lastResponse == AT_NOTHING || lastResponse == AT_FCERROR) && ++attempts < conf.class1RMPersistence);
+    } while ((lastResponse == AT_NOTHING || lastResponse == AT_FCERROR || lastResponse == AT_OK) && ++attempts < conf.class1RMPersistence);
     if (lastResponse == AT_ERROR) gotEOT = true;	// on hook
     if (lastResponse == AT_FRH3 && waitFor(AT_CONNECT, conf.t2Timer)) {
 	gotRTNC = true;
