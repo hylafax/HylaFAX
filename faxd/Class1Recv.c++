@@ -1168,6 +1168,7 @@ Class1Modem::recvPageECMData(TIFF* tif, const Class2Params& params, Status& eres
 	u_short syncattempts = 0;
 	bool blockgood = false, dolongtrain = false;
 	bool gotoPhaseD = false;
+	bool carrierup = false;
 	do {
 	    sendERR = false;
 	    resetBlock();
@@ -1176,7 +1177,7 @@ Class1Modem::recvPageECMData(TIFF* tif, const Class2Params& params, Status& eres
 	    bool dataseen = false;
 	    bool retryrmcmd;
 	    int rmattempted = 0;
-	    do {
+	    if (!carrierup) do {
 		retryrmcmd = false;
 		if (!useV34 && !gotoPhaseD) {
 		    gotRTNC = false;
@@ -1433,12 +1434,13 @@ Class1Modem::recvPageECMData(TIFF* tif, const Class2Params& params, Status& eres
 	    if (flowControl == FLOW_XONXOFF)
 		(void) setXONXOFF(FLOW_NONE, FLOW_XONXOFF, ACT_NOW);
 	    gotoPhaseD = false;
+	    carrierup = false;
 	    if (!sendERR && (useV34 || syncECMFrame())) {	// no synchronization needed w/V.34-fax
 		time_t start = Sys::now();
 		do {
 		    frame.reset();
 		    if (recvECMFrame(frame)) {
-			if (frame[2] == 0x60) {		// FCF is FCD
+			if (frame[2] == FCF_FCD) {	// FCF is FCD
 			    dataseen = true;
 			    pagedataseen = true;
 			    rcpcnt = 0;			// reset RCP counter
@@ -1458,7 +1460,7 @@ Class1Modem::recvPageECMData(TIFF* tif, const Class2Params& params, Status& eres
 			    } else {
 				protoTrace("RECV frame FCS check failed");
 			    }
-			} else if (frame[2] == 0x61 && frame.checkCRC()) {	// FCF is RCP
+			} else if (frame[2] == FCF_RCP && frame.checkCRC()) {	// FCF is RCP
 			    rcpcnt++;
 			} else {
 			    dataseen = true;
@@ -1522,6 +1524,7 @@ Class1Modem::recvPageECMData(TIFF* tif, const Class2Params& params, Status& eres
 		    u_int br = useV34 ? primaryV34Rate : curcap->br + 1;
 		    long wait = br >= 1 && br <= 15 ? 273066 / br : conf.t2Timer;
 		    gotpps = recvFrame(ppsframe, FCF_RCVR, wait);	// wait longer
+		    if (ppsframe.getFCF() == FCF_RCP) gotpps = false;
 		} while (!gotpps && gotCONNECT && !wasTimeout() && !gotEOT && ++recvFrameCount < 5);
 		if (gotpps) {
 		    traceFCF("RECV recv", ppsframe.getFCF());
@@ -1766,6 +1769,19 @@ Class1Modem::recvPageECMData(TIFF* tif, const Class2Params& params, Status& eres
 			    recvdDCN = true;
 			    abortPageECMRecv(tif, params, block, fcount, seq, pagedataseen);
 			    return (false);
+			case FCF_FCD:
+			    if (useV34) {
+				/*
+				 * The modem had indicated the control channel to us, so we thought that
+				 * we were in Phase D now.  But we got another ECM frame, so we're really back
+				 * in Phase C.  This is weird, but we can cope with it.  Should we maybe
+				 * try to store this frame in the block?
+				 */
+				protoTrace("Odd.  Received ECM frame in Phase D.  Return to Phase C.");
+				carrierup = true;
+				rcpcnt = 0;		// reset RCP counter
+				break;
+			    }
 			default:
 			    // The message is not ECM-specific: fall out of ECM receive, and let
 			    // the earlier message-handling routines try to cope with the signal.

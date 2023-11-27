@@ -1169,7 +1169,7 @@ Class1Modem::blockFrame(const u_char* bitrev, bool lastframe, u_int ppmcmd, Stat
 	    }
 	    free(firstframe);
 	    HDLCFrame rcpframe(5);
-	    rcpframe.put(0xff); rcpframe.put(0xc0); rcpframe.put(0x61); rcpframe.put(0x96); rcpframe.put(0xd3);
+	    rcpframe.put(0xff); rcpframe.put(0xc0); rcpframe.put(FCF_RCP); rcpframe.put(0x96); rcpframe.put(0xd3);
 	    for (u_short k = 0; k < 3; k++) {		// three RCP frames
 		for (u_short j = 0; j < 5; j++)
 		    blockData(rcpframe[j], false);
@@ -1651,7 +1651,7 @@ Class1Modem::sendClass1ECMData(const u_char* data, u_int cc, const u_char* bitre
 	if (ecmFramePos == 0) {
 	    ecmFrame[ecmFramePos++] = 0xff; 	// address field
 	    ecmFrame[ecmFramePos++] = 0xc0;	// control field
-	    ecmFrame[ecmFramePos++] = 0x60;	// FCD FCF
+	    ecmFrame[ecmFramePos++] = FCF_FCD;	// FCD FCF
 	    ecmFrame[ecmFramePos++] = frameRev[frameNumber++];	// block frame number
 	}
 	ecmFrame[ecmFramePos++] = frameRev[data[i]];

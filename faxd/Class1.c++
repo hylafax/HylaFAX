@@ -1083,7 +1083,7 @@ Class1Modem::recvECMFrame(HDLCFrame& frame)
 	}
 	if (bit == 0) ones = 0;
 	// don't wait for the terminating flag on an RCP frame
-	if (frame[0] == 0xff && frame[1] == 0xc0 && frame[2] == 0x61 && frame.getLength() == 5 && frame.checkCRC()) {
+	if (frame[0] == 0xff && frame[1] == 0xc0 && frame[2] == FCF_RCP && frame.getLength() == 5 && frame.checkCRC()) {
 	    protoTrace("RECV received RCP frame");
 	    rcpframe = true;
 	} else if (didBlockEnd()) {

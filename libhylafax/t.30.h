@@ -70,6 +70,8 @@
  */
 #define	FCF_SNDR	0x80		// station receiving valid DIS
 #define	FCF_RCVR	0x00		// station receiving valid DIS response
+#define	FCF_FCD		0x60		// facsimile coded data (ECM frames)
+#define	FCF_RCP		0x61		// return to control for partial page
 
 // initial identification commands from the called to calling station
 #define	FCF_DIS		0x01		// digital identification signal

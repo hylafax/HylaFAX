@@ -688,6 +688,12 @@ FaxModem::traceFCF(const char* dir, u_int fcf)
 	case FCF_PWD:
 	    fcfname = "PWD (password)";
 	    break;
+	case FCF_FCD:
+	    fcfname = "FCD (facsimile coded data)";
+	    break;
+	case FCF_RCP:
+	    fcfname = "RCP (return to control for partial page)";
+	    break;
 	default:
 	    protoTrace("unknown FCF 0x%X", fcf);
 	    return;
