@@ -43,7 +43,7 @@
     int RunLength;			/* length of current run */	\
     tiff_runlen_t* pa;			/* place to stuff next run */	\
     tiff_runlen_t* thisrun;			/* current row's run array */	\
-    const TIFFFaxTabEnt* TabEnt
+    const hf_TIFFFaxTabEnt* TabEnt
 #define	DECLARE_STATE_2D()						\
     DECLARE_STATE();							\
     int b1;				/* next change on prev line */	\
@@ -185,6 +185,133 @@ G3Decoder::isNextRow1D()
 #define	prematureEOF(a0)	// never happens 'cuz of longjmp
 #define	SWAP(t,a,b)	{ t x; x = (a); (a) = (b); (b) = x; }
 
+#define isAligned(p, t) ((((size_t)(p)) & (sizeof(t) - 1)) == 0)
+
+#define FILL(n, cp)                                                            \
+    for (int32_t ifill = 0; ifill < (n); ++ifill)                              \
+    {                                                                          \
+        (cp)[ifill] = 0xff;                                                    \
+    }                                                                          \
+    (cp) += (n);
+
+#define ZERO(n, cp)                                                            \
+    for (int32_t izero = 0; izero < (n); ++izero)                              \
+    {                                                                          \
+        (cp)[izero] = 0;                                                       \
+    }                                                                          \
+    (cp) += (n);
+
+/*
+ * Bit-fill a row according to the white/black
+ * runs generated during G3/G4 decoding.
+ * Lifted from libtiff-4.5.0 source.
+ */
+void hf_TIFFFax3fillruns(unsigned char *buf, uint32_t *runs, uint32_t *erun,
+                       uint32_t lastx)
+{
+    static const unsigned char _fillmasks[] = {0x00, 0x80, 0xc0, 0xe0, 0xf0,
+                                               0xf8, 0xfc, 0xfe, 0xff};
+    unsigned char *cp;
+    uint32_t x, bx, run;
+    int32_t n, nw;
+    int64_t *lp;
+
+    if ((erun - runs) & 1)
+        *erun++ = 0;
+    x = 0;
+    for (; runs < erun; runs += 2)
+    {
+        run = runs[0];
+        if (x + run > lastx || run > lastx)
+            run = runs[0] = (uint32_t)(lastx - x);
+        if (run)
+        {
+            cp = buf + (x >> 3);
+            bx = x & 7;
+            if (run > 8 - bx)
+            {
+                if (bx)
+                { /* align to byte boundary */
+                    *cp++ &= 0xff << (8 - bx);
+                    run -= 8 - bx;
+                }
+                if ((n = run >> 3) != 0)
+                { /* multiple bytes to fill */
+                    if ((n / sizeof(int64_t)) > 1)
+                    {
+                        /*
+                         * Align to int64_tword boundary and fill.
+                         */
+                        for (; n && !isAligned(cp, int64_t); n--)
+                            *cp++ = 0x00;
+                        lp = (int64_t *)cp;
+                        nw = (int32_t)(n / sizeof(int64_t));
+                        n -= nw * sizeof(int64_t);
+                        do
+                        {
+                            *lp++ = 0L;
+                        } while (--nw);
+                        cp = (unsigned char *)lp;
+                    }
+                    ZERO(n, cp);
+                    run &= 7;
+                }
+                if (run)
+                    cp[0] &= 0xff >> run;
+            }
+            else
+                cp[0] &= ~(_fillmasks[run] >> bx);
+            x += runs[0];
+        }
+        run = runs[1];
+        if (x + run > lastx || run > lastx)
+            run = runs[1] = lastx - x;
+        if (run)
+        {
+            cp = buf + (x >> 3);
+            bx = x & 7;
+            if (run > 8 - bx)
+            {
+                if (bx)
+                { /* align to byte boundary */
+                    *cp++ |= 0xff >> bx;
+                    run -= 8 - bx;
+                }
+                if ((n = run >> 3) != 0)
+                { /* multiple bytes to fill */
+                    if ((n / sizeof(int64_t)) > 1)
+                    {
+                        /*
+                         * Align to int64_t boundary and fill.
+                         */
+                        for (; n && !isAligned(cp, int64_t); n--)
+                            *cp++ = 0xff;
+                        lp = (int64_t *)cp;
+                        nw = (int32_t)(n / sizeof(int64_t));
+                        n -= nw * sizeof(int64_t);
+                        do
+                        {
+                            *lp++ = -1L;
+                        } while (--nw);
+                        cp = (unsigned char *)lp;
+                    }
+                    FILL(n, cp);
+                    run &= 7;
+                }
+                /* Explicit 0xff masking to make icc -check=conversions happy */
+                if (run)
+                    cp[0] = (unsigned char)((cp[0] | (0xff00 >> run)) & 0xff);
+            }
+            else
+                cp[0] |= _fillmasks[run] >> bx;
+            x += runs[1];
+        }
+    }
+    assert(x == lastx);
+}
+#undef ZERO
+#undef FILL
+
 /*
  * Decode a single row of pixels and return
  * the decoded data in the scanline buffer.
@@ -239,7 +366,7 @@ G3Decoder::decodeRow(void* scanline, u_int lastx)
     if (!nullrow)
 	RTCrun = 0;
     if (scanline)
-	_TIFFFax3fillruns((u_char*) scanline, thisrun, pa, lastx);
+	hf_TIFFFax3fillruns((u_char*) scanline, thisrun, pa, lastx);
     if (is2D) {
 	SETVAL(0);			// imaginary change for reference
 	SWAP(tiff_runlen_t*, curruns, refruns);

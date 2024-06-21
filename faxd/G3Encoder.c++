@@ -323,11 +323,11 @@ G3Encoder::encode(const void* vp, u_int w, u_int h, u_char* rp)
 			a2 = finddiff2(bp, a1, w, PIXEL(bp,a1));
 			putcode(horizcode);
 			if (a0+a1 == 0 || PIXEL(bp, a0) == 0) {
-			    putspan(a1-a0, TIFFFaxWhiteCodes);
-			    putspan(a2-a1, TIFFFaxBlackCodes);
+			    putspan(a1-a0, hf_TIFFFaxWhiteCodes);
+			    putspan(a2-a1, hf_TIFFFaxBlackCodes);
 			} else {
-			    putspan(a1-a0, TIFFFaxBlackCodes);
-			    putspan(a2-a1, TIFFFaxWhiteCodes);
+			    putspan(a1-a0, hf_TIFFFaxBlackCodes);
+			    putspan(a2-a1, hf_TIFFFaxWhiteCodes);
 			}
 			a0 = a2;
 		    } else {				/* vertical mode */
@@ -350,12 +350,12 @@ G3Encoder::encode(const void* vp, u_int w, u_int h, u_char* rp)
 	    int bs = 0, span;
 	    for (;;) {
 		span = findspan(&bp, bs, w, zeroruns);		// white span
-		putspan(span, TIFFFaxWhiteCodes);
+		putspan(span, hf_TIFFFaxWhiteCodes);
 		bs += span;
 		if ((u_int) bs >= w)
 		    break;
 		span = findspan(&bp, bs, w, oneruns);		// black span
-		putspan(span, TIFFFaxBlackCodes);
+		putspan(span, hf_TIFFFaxBlackCodes);
 		bs += span;
 		if ((u_int) bs >= w)
 		    break;
