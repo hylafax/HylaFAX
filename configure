@@ -835,7 +835,7 @@ checkGCCVersion()
 # NB: use ANSI C prototype to weed out non-ANSI compilers.
 #
 cat>dummy.c<<EOF
-main(int argc, char* argv) { exit(0); }
+int main(int argc, char* argv) { return 0; }
 EOF
 
 checkCompiler()
@@ -986,7 +986,7 @@ fi
 # Make dependency information.
 #
 cat>dummy.c<<EOF
-main(int argc, char* argv) { exit(0); }
+int main(int argc, char* argv) { return 0; }
 EOF
 capture cat dummy.c
 if capture "$CCOMPILER -c -M $MKDEPCOPTS dummy.c | grep '^dummy.o[ 	]*:[ 	]*dummy.c'"; then
@@ -1337,7 +1337,8 @@ if [ -z "$RANLIB" ]; then
 fi
 
 cat>dummy.C<<EOF
-#include "new.h"
+#include <new>
+#include <stdio.h>
 struct foo {
     int x;
     foo();
@@ -1556,9 +1557,14 @@ EOF
 #
 CheckForLibrary()
 {
+    rm t.c
+    while echo "$1" | grep -Eq '\.h$'; do
+	echo "#include <$1>" >> t.c
+	shift
+    done
     f=$1; shift
     libs="$@";
-    cat>t.c<<EOF
+    cat>>t.c<<EOF
 int t() { $f(); return 0; }
 int main(){ t(); return 0; }
 EOF
@@ -1571,10 +1577,15 @@ EOF
 #
 CheckForLibraryWithArgs()
 {
+    rm t.c
+    while echo "$1" | grep -Eq '\.h$'; do
+	echo "#include <$1>" >> t.c
+	shift
+    done
     f=$1; shift
     a=$1; shift
     libs="$@";
-    cat>t.c<<EOF
+    cat>>t.c<<EOF
 int t() { $f($a); return 0; }
 int main(){ t(); return 0; }
 EOF
@@ -1595,7 +1606,7 @@ CheckForIncludeFile()
 }
 
 if [ "$SGI2FAX" = auto ]; then
-    if CheckForLibrary iopen -limage && CheckForIncludeFile gl/image.h; then
+    if CheckForLibraryWithArgs gl/image.h iopen "(void*)0, (void*)0" -limage; then
 	Note "Looks like there is support for SGI RGB images, configuring sgi2fax."
 	SGI2FAX=yes
     else
@@ -1603,7 +1614,7 @@ if [ "$SGI2FAX" = auto ]; then
     fi
 fi
 if [ "$LIBMALLOC" = auto ]; then
-    if CheckForLibrary mallopt -lmalloc; then
+    if CheckForLibraryWithArgs malloc.h mallopt "0, 0" -lmalloc; then
 	Note "Looks like -lmalloc is here, using it for memory allocation."
 	LIBMALLOC=yes
     else
@@ -1611,7 +1622,7 @@ if [ "$LIBMALLOC" = auto ]; then
     fi
 fi
 if [ "$LIBSUN" = auto ]; then
-    if CheckForLibrary getpwnam -lsun; then
+    if CheckForLibraryWithArgs sys/types.h pwd.h getpwnam "(void*)0" -lsun; then
 	Note "Looks like -lsun is here, using it for NIS passwd & group stuff."
 	LIBSUN=yes
     else
@@ -1627,7 +1638,7 @@ CheckPAMType()
 {
     Note "... checking PAM library version"
     cat>t.c++<<EOF
-#include "security/pam_appl.h"
+#include <security/pam_appl.h>
 int
 pamconv(int num_msg, const struct pam_message **msg, struct pam_response **resp, void *appdata)
 {
@@ -1651,11 +1662,10 @@ EOF
 HAVE_PAM="/*#define HAVE_PAM 1*/"
 if [ "$DISABLE_PAM" != "yes" ]; then
 	Note "Checking for PAM (Pluggable Authentication Module) support"
-	CheckForLibrary pam_authenticate -lpam &&
-		CheckForIncludeFile security/pam_appl.h && {
-			HAVE_PAM="#define HAVE_PAM 1"
-			LIBPAM="-lpam"
-		}
+	CheckForLibraryWithArgs security/pam_appl.h pam_authenticate "(void*)0, 0" -lpam && {
+		HAVE_PAM="#define HAVE_PAM 1"
+		LIBPAM="-lpam"
+	}
 	if [ "x$LIBPAM" = "x" ]; then
 		Note "... not found. Disabling PAM support"
 		else
@@ -1668,11 +1678,10 @@ HAVE_JBIG="/*#define HAVE_JBIG 1*/"
 LIBJBIG=""
 if [ "$DISABLE_JBIG" != "yes" ]; then
 	Note "Checking for JBIG library support"
-	CheckForLibrary jbg_enc_init -ljbig &&
-		CheckForIncludeFile jbig.h && {
-			HAVE_JBIG="#define HAVE_JBIG 1"
-			LIBJBIG="-ljbig"
-		}
+	CheckForLibraryWithArgs jbig.h jbg_enc_init "(void*)0, 0, 0, 0, (void*)0, (void*)0, (void*)0" -ljbig && {
+		HAVE_JBIG="#define HAVE_JBIG 1"
+		LIBJBIG="-ljbig"
+	}
 	if [ "x$LIBJBIG" = "x" ]; then
 		Note "... not found. Disabling JBIG support"
 	else
@@ -1689,8 +1698,8 @@ if [ "$NLS" != "no" ]; then
             runMake t "t:; $MSGMERGE /dev/null /dev/null> /dev/null" && {
 		ENABLE_NLS="#define ENABLE_NLS 1"
                 NLS='yes'
-		CheckForLibraryWithArgs gettext '""' $LIBINTL || {
-		    CheckForLibraryWithArgs gettext '""' -lintl || {
+		CheckForLibraryWithArgs libintl.h gettext '""' $LIBINTL || {
+		    CheckForLibraryWithArgs libintl.h gettext '""' -lintl || {
 			Note "Couldn't find anything to link for gettext"
 			cat 1>&2 <<EOF
 Missing INTL Library.
@@ -1720,7 +1729,7 @@ EOF
 		    LIBINTL="-lintl"
                 }
 		Note "... found. Enabling NLS support"
-		CheckForLibraryWithArgs ngettext '"", "", 1' ${LIBINTL} || {
+		CheckForLibraryWithArgs libintl.h ngettext '"", "", 1' ${LIBINTL} || {
 			Note "Need ngettext support"
 			CONFIG_NEEDNGETTEXT=yes
 		}
@@ -1750,21 +1759,21 @@ else
 	Note "Disabling PODOFO support"
 fi
 
-CheckForLibrary crypt -lc || {
+CheckForLibraryWithArgs unistd.h crypt "(void*)0, (void*)0" -lc || {
     #
     # FreeBSD-2.1 in particular needs -lcrypt.
     # SCO sometime has -lcrypt_d (domestic) and
     #    sometimes -lcrypt_i (import?)
     #
     for i in -lcrypt -lcrypt_d -lcrypt_i; do
-	if CheckForLibrary crypt $i; then
+	if CheckForLibraryWithArgs unistd.h crypt "(void*)0, (void*)0" $i; then
 	    Note "Looks like $i is needed for crypt."
 	    LIBCRYPT="$i"
 	    break;
 	fi
     done
 }
-CheckForLibraryWithArgs strftime "(void*)0, 0, (void*)0, (void*)0" -lc || {
+CheckForLibraryWithArgs time.h strftime "(void*)0, 0, (void*)0, (void*)0" -lc || {
     #
     # SCO has strftime in -lintl.
     #
@@ -1786,18 +1795,18 @@ EOF
 	boom
     fi
 }
-CheckForLibrary socket -lc || {
+CheckForLibraryWithArgs sys/socket.h socket "0, 0, 0" -lc || {
     #
     # Socket support is not in normal C library, check
     # for SVR4-style networking w/ -lsocket & -lnsl
     #
-    if CheckForLibrary socket -lsocket -lnsl; then
+    if CheckForLibraryWithArgs sys/socket.h socket "0, 0, 0" -lsocket -lnsl; then
 	Note "Looks like -lsocket & -lnsl are needed for socket support."
 	MACHDEPLIBS="$MACHDEPLIBS -lsocket -lnsl"
-    elif CheckForLibrary socket -linet -lnsl_s; then
+    elif CheckForLibraryWithArgs sys/socket.h socket "0, 0, 0" -linet -lnsl_s; then
 	Note "Looks like -linet & -lnsl_s are needed for socket support."
 	MACHDEPLIBS="$MACHDEPLIBS -linet -lnsl_s"
-    elif CheckForLibrary socket -lsocket; then
+    elif CheckForLibraryWithArgs sys/socket.h socket "0, 0, 0" -lsocket; then
 	Note "Looks like -lsocket is needed for socket support."
 	MACHDEPLIBS="$MACHDEPLIBS -lsocket"
     else
@@ -1817,63 +1826,101 @@ EOF
     fi
 }
 
-CheckForLibrary inet_aton -lc || {
-    CheckForLibrary inet_aton -lresolv && {
+CheckForLibraryWithArgs sys/types.h sys/socket.h netinet/in.h arpa/inet.h inet_aton "(void*)0, (void*)0" -lc || {
+    CheckForLibraryWithArgs sys/types.h sys/socket.h netinet/in.h arpa/inet.h inet_aton "(void*)0, (void*)0" -lresolv && {
 	MACHDEPLIBS="$MACHDEPLIBS -lresolv"
     }
 }
 
-if CheckForLibrary logwtmp -lutil; then
+if CheckForLibraryWithArgs utmp.h logwtmp "(void*)0, (void*)0, (void*)0" -lutil; then
     Note "Looks like -lutil is needed for wtmp file logging."
     LIBUTIL="-lutil"
     HAS_LOGWTMP=yes
 else
     HAS_LOGWTMP=no
 fi
-CheckForLibrary ftruncate -lc || {
-    CheckForLibrary chsize -lx && {
+CheckForLibraryWithArgs unistd.h ftruncate "0, 0" -lc || {
+    CheckForLibraryWithArgs chsize "0, 0" -lx && {
 	Note "Looks like -lx is needed for chsize (used to emulate ftruncate)."
 	MACHDEPLIBS="$MACHDEPLIBS -lx"
     }
 }
-CheckForLibrary flock -lc || {
-    CheckForLibrary flock -lbsd && {
+CheckForLibraryWithArgs sys/file.h flock "0" -lc || {
+    CheckForLibraryWithArgs sys/file.h flock "0" -lbsd && {
 	Note "Looks like -lbsd is needed for flock."
 	MACHDEPLIBS="$MACHDEPLIBS -lbsd"
     }
 }
-for f in openlog pututxline; do
-    CheckForLibrary $f -lc || {
-	CheckForLibrary $f -lgen && {
-	    Note "Looks like -lgen is needed for $f."
+while true; do
+    CheckForLibraryWithArgs syslog.h openlog "(void*)0, 0, 0" -lc || {
+	CheckForLibraryWithArgs syslog.h openlog "(void*)0, 0, 0" -lgen && {
+	    Note "Looks like -lgen is needed for openlog."
 	    MACHDEPLIBS="$MACHDEPLIBS -lgen"
-	    break;
+	    break
 	}
     }
+    CheckForLibraryWithArgs utmpx.h pututxline "(void*)0" -lc || {
+	CheckForLibraryWithArgs utmpx.h pututxline "(void*)0" -lgen && {
+	    Note "Looks like -lgen is needed for pututxline."
+	    MACHDEPLIBS="$MACHDEPLIBS -lgen"
+	    break
+	}
+    }
+    break
 done
 if [ "$ISGXX" = yes ]; then
     if [ -z "$CXXRUNTIME" ]; then
-	for f in memmove strdup; do
-	    CheckForLibrary $f -lc || {
-		CheckForLibrary $f -lg++ && {
-		    Note "Looks like we need -lg++ for $f"
+	while true; do
+	    CheckForLibraryWithArgs string.h memmove "(void*)0, (void*)0, 0" -lc || {
+		CheckForLibraryWithArgs string.h memmove "(void*)0, (void*)0, 0" -lg++ && {
+		    Note "Looks like we need -lg++ for memmove"
 		    MACHDEPLIBS="$MACHDEPLIBS -lg++"
-		    break;
+		    break
 		}
 	    }
+	    CheckForLibraryWithArgs string.h strdup "(void*)0" -lc || {
+		CheckForLibraryWithArgs string.h strdup "(void*)0" -lg++ && {
+		    Note "Looks like we need -lg++ for strdup"
+		    MACHDEPLIBS="$MACHDEPLIBS -lg++"
+		    break
+		}
+	    }
+	    break
 	done
     fi
-    for f in strtoul strerror memmove random; do
-	CheckForLibrary $f -lc || {
-	    CheckForLibrary $f -liberty && {
-		Note "Looks like we need -liberty for $f"
+    while true; do
+	CheckForLibraryWithArgs stdlib.h limits.h strtoul "(void*)0, (void*)0, 0" -lc || {
+	    CheckForLibraryWithArgs strtoul "(void*)0, (void*)0, 0" -liberty && {
+		Note "Looks like we need -liberty for strtoul"
 		MACHDEPLIBS="$MACHDEPLIBS -liberty"
-		break;
+		break
 	    }
 	}
+	CheckForLibraryWithArgs stdio.h string.h strerror "0" -lc || {
+	    CheckForLibraryWithArgs strerror "0" -liberty && {
+		Note "Looks like we need -liberty for strerror"
+		MACHDEPLIBS="$MACHDEPLIBS -liberty"
+		break
+	    }
+	}
+	CheckForLibraryWithArgs string.h memmove "(void*)0, (void*)0, 0" -lc || {
+	    CheckForLibraryWithArgs memmove "(void*)0, (void*)0, 0" -liberty && {
+		Note "Looks like we need -liberty for memmove"
+		MACHDEPLIBS="$MACHDEPLIBS -liberty"
+		break
+	    }
+	}
+	CheckForLibrary stdlib.h random -lc || {
+	    CheckForLibrary random -liberty && {
+		Note "Looks like we need -liberty for random"
+		MACHDEPLIBS="$MACHDEPLIBS -liberty"
+		break
+	    }
+	}
+	break
     done
 fi
-CheckForLibrary floor -lm && {
+CheckForLibraryWithArgs math.h floor "0" -lm && {
     Note "Looks like -lm is the library for math functions."
     MACHDEPLIBS="$MACHDEPLIBS -lm"
 }
@@ -2197,7 +2244,7 @@ EmitConfigurationDefinitions()
 #
 CheckForFunc()
 {
-    echo "extern int $1(); main(){$1($2);exit(0);}" >t.c
+    echo "extern int $1(); int main(){$1($2);return 0;}" >t.c
     capture cat t.c
     runMake t "t:; \${CC} t.c ${MACHDEPLIBS}"
 }
@@ -2387,6 +2434,9 @@ CheckForMMAP()
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 EOF
     CheckForFunc getpagesize || {
 	cat<<'EOF'
@@ -2418,7 +2468,6 @@ EOF
 EOF
     }
 cat<<'EOF'
-extern char* malloc();
 static void
 boom(const char* msg)
 {
@@ -2469,7 +2518,7 @@ CheckForStructExitStatus()
 	echo "$i"
     done
     cat<<EOF
-main()
+int main()
 {
     struct $decl x;
     x.ut_exit.e_exit = 0;
@@ -2486,10 +2535,10 @@ CheckForTimeZoneHandling()
 {
     (echo '#include <time.h>'
     cat<<EOF
-main()
+int main()
 {
     struct tm x;
-    char* cp;
+    const char* cp;
     long off;
     cp = x.tm_zone;
     off = x.tm_gmtoff;
@@ -2505,7 +2554,7 @@ CheckForTXCD()
 {
     cat>t.c<<EOF
 #include <sys/ioctl.h>
-main()
+int main()
 {
     ioctl(0, TXADDCD, "rts");
     ioctl(0, TXDELCD, "rts");
@@ -2559,10 +2608,10 @@ CheckLibtiff()
     cat>t.c<<EOF
 #include <stdio.h>
 #include "tiffio.h"
-main()
+int main()
 {
     printf( "header_ver=%d lib_ver=%s", TIFFLIB_VERSION, TIFFGetVersion() );
-    exit(0);
+    return 0;
 }
 EOF
     capture cat t.c
@@ -3088,7 +3137,7 @@ BuildPortDotH()
 	    AddFuncDecl logwtmp \
 		'int logwtmp(const char*, const char*, const char*);'
 	}
-	CheckForLibrary logout -lutil && {
+	CheckForLibraryWithArgs utmp.h logout "(void*)0" -lutil && {
 	    echo '#define HAS_LOGOUT 1'
         Note "... configure use of logout (BSD-style utmp support)"
         CheckForFuncDecl logout utmp.h || {
@@ -3302,7 +3351,7 @@ CheckForSyslog()
 {
     (echo '#include <syslog.h>';
      echo '#include "port.h"';
-     echo 'main(){syslog(0,"foo");exit(0);}') >t.c
+     echo 'int main(){syslog(0,"foo");return 0;}') >t.c
     capture cat t.c
     runMake t "t:; \${CC} t.c ${MACHDEPLIBS}"
 }
@@ -3311,7 +3360,7 @@ CheckForVSyslog()
     (echo '#include <syslog.h>';
      echo '#include <stdarg.h>';
      echo '#include "port.h"';
-     echo 'main(){va_list ap; vsyslog(0,"foo", ap);exit(0);}') >t.c
+     echo 'int main(){va_list ap; vsyslog(0,"foo", ap);return 0;}') >t.c
     capture cat t.c
     runMake t "t:; \${CC} t.c ${MACHDEPLIBS}"
 }
@@ -3334,19 +3383,21 @@ Note "Checking ZLIB support."
 # Verify library is compatible.
 #
 cat>t.c<<EOF
-#include "zlib.h"
-main()
+#include <stdio.h>
+#include <string.h>
+#include <zlib.h>
+int main()
 {
     if (strcmp(ZLIB_VERSION, "0.95") < 0) {     /* include file version */
         printf("old include files: version %u\n", ZLIB_VERSION);
-        exit(-1);
+        return -1;
     }
     if (strncmp(zlib_version, ZLIB_VERSION, 4) != 0) {
         printf("library/header file incompatibility: %s %s\n",
         zlib_version, ZLIB_VERSION);
-        exit(-1);
+        return -1;
     } else {
-        exit(0);
+        return 0;
     }
 }
 EOF
