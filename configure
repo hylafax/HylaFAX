@@ -835,7 +835,7 @@ checkGCCVersion()
 # NB: use ANSI C prototype to weed out non-ANSI compilers.
 #
 cat>dummy.c<<EOF
-int main(int argc, char* argv) { return 0; }
+int main(int argc, char* argv[]) { return 0; }
 EOF
 
 checkCompiler()
@@ -986,7 +986,7 @@ fi
 # Make dependency information.
 #
 cat>dummy.c<<EOF
-int main(int argc, char* argv) { return 0; }
+int main(int argc, char* argv[]) { return 0; }
 EOF
 capture cat dummy.c
 if capture "$CCOMPILER -c -M $MKDEPCOPTS dummy.c | grep '^dummy.o[ 	]*:[ 	]*dummy.c'"; then
